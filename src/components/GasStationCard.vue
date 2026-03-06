@@ -1,7 +1,13 @@
 <template>
   <div class="gas-card">
     <div class="card-header">
-      <h3 class="station-name">{{ station.name || 'ESTACIÓN DE SERVICIO' }}</h3>
+      <div class="title-wrapper">
+        <img v-if="logoUrl" :src="logoUrl" :alt="station.name" class="station-logo" @error="handleImageError" />
+        <div v-else class="generic-logo">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M3 22v-8c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v8"></path><path d="M11 22h10"></path><path d="M18 22v-5c0-1.1-.9-2-2-2h-3"></path><circle cx="14" cy="11" r="3"></circle><line x1="14" y1="14" x2="14" y2="22"></line><line x1="3" y1="9" x2="3" y2="4c0-1.1.9-2 2-2h14c1.1 0 2 .9 2 2v5"></line></svg>
+        </div>
+        <h3 class="station-name">{{ station.name || 'ESTACIÓN DE SERVICIO' }}</h3>
+      </div>
       <span class="distance-badge">{{ distance.toFixed(1) }} km</span>
     </div>
     <div class="location-details">
@@ -35,7 +41,8 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+import { getStationLogo } from '../utils/logos';
 
 const props = defineProps({
   station: {
@@ -47,6 +54,17 @@ const props = defineProps({
     required: true
   }
 });
+
+const initialLogo = getStationLogo(props.station.name);
+const imageError = ref(false);
+
+const logoUrl = computed(() => {
+  return imageError.value ? null : initialLogo;
+});
+
+const handleImageError = () => {
+  imageError.value = true;
+};
 
 const mapsUrl = computed(() => {
   return `https://www.google.com/maps/dir/?api=1&destination=${props.station.lat},${props.station.lon}`;
@@ -79,6 +97,36 @@ const mapsUrl = computed(() => {
   align-items: flex-start;
   margin-bottom: 0.75rem;
   gap: 1rem;
+}
+
+.title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.station-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: 4px;
+  background: white; /* Logos are mostly designed for white background */
+  padding: 2px;
+  flex-shrink: 0;
+}
+
+.generic-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--surface-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-muted);
+  flex-shrink: 0;
 }
 
 .station-name {
