@@ -1,0 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* Colors */
+  --bg-color: #0f172a; /* Slate 900 */
+  --surface-bg: #1e293b; /* Slate 800 */
+  --border-color: #334155; /* Slate 700 */
+  
+  --primary: #3b82f6; /* Blue 500 */
+  --primary-light: #60a5fa; /* Blue 400 */
+  --primary-dark: #2563eb; /* Blue 600 */
+  --primary-alpha: rgba(59, 130, 246, 0.1);
+  
+  --text-base: #f8fafc; /* Slate 50 */
+  --text-muted: #94a3b8; /* Slate 400 */
+  
+  /* Borders and Shadows */
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-color-scheme: light) {
+  /* Ignored light mode to keep the dark aesthetic forced as requested */
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-color);
+  background: radial-gradient(circle at top center, #1b273d 0%, var(--bg-color) 60%, rgba(10, 15, 25, 1) 100%);
+  background-attachment: fixed;
+  color: var(--text-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Base resets & utilities */
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+}
+
+p {
+  line-height: 1.5;
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
