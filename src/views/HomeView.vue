@@ -25,6 +25,7 @@
 
           <select v-model="fuelType" class="fuel-select" @change="sortStations">
             <option value="price95">Orden: Gasolina 95 más barata</option>
+            <option value="price98">Orden: Gasolina 98 más barata</option>
             <option value="priceDiesel">Orden: Diésel más barato</option>
             <option value="distance">Orden: Más cercanas primero</option>
           </select>
@@ -64,6 +65,7 @@
           :key="station.id"
           :station="station"
           :distance="station.distance"
+          :activeFuel="fuelType"
         />
       </div>
 
@@ -175,9 +177,10 @@ const filterAndSort = () => {
     const provinceStations = allStations.value.filter(s => s.province === currentProvince);
     let minPrice = Infinity;
     let maxPrice = -Infinity;
+    const statFuel = fuelType.value === 'distance' ? 'price95' : fuelType.value;
     
     provinceStations.forEach(s => {
-      let price = s[fuelType.value];
+      let price = s[statFuel];
       if (price && price > 0) {
         if (price < minPrice) minPrice = price;
         if (price > maxPrice) maxPrice = price;

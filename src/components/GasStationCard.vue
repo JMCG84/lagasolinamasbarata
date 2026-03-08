@@ -16,11 +16,15 @@
     </div>
     
     <div class="prices-container">
-      <div v-if="station.price95" class="price-box">
+      <div v-if="(activeFuel === 'price95' || activeFuel === 'distance') && station.price95" class="price-box">
         <span class="fuel-type">Gasolina 95</span>
         <span class="price-value">{{ station.price95.toFixed(3) }} €/L</span>
       </div>
-      <div v-if="station.priceDiesel" class="price-box">
+      <div v-if="(activeFuel === 'price98' || activeFuel === 'distance') && station.price98" class="price-box">
+        <span class="fuel-type">Gasolina 98</span>
+        <span class="price-value">{{ station.price98.toFixed(3) }} €/L</span>
+      </div>
+      <div v-if="(activeFuel === 'priceDiesel' || activeFuel === 'distance') && station.priceDiesel" class="price-box">
         <span class="fuel-type">Diésel</span>
         <span class="price-value">{{ station.priceDiesel.toFixed(3) }} €/L</span>
       </div>
@@ -52,6 +56,10 @@ const props = defineProps({
   distance: {
     type: Number,
     required: true
+  },
+  activeFuel: {
+    type: String,
+    default: 'distance'
   }
 });
 

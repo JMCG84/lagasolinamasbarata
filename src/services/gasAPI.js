@@ -31,6 +31,7 @@ function formatData(stations) {
     
     // Parse prices
     const price95 = parsePrice(station['Precio Gasolina 95 E5']);
+    const price98 = parsePrice(station['Precio Gasolina 98 E5']);
     const priceDiesel = parsePrice(station['Precio Gasoleo A']);
 
     return {
@@ -43,6 +44,7 @@ function formatData(stations) {
       lat,
       lon,
       price95,
+      price98,
       priceDiesel,
       margin: station['Margen']
     };
