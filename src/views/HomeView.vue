@@ -1,5 +1,9 @@
 <template>
   <div class="home-view">
+    <button @click="toggleTheme" class="theme-toggle" aria-label="Cambiar tema">
+      <svg v-if="isDarkMode" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+    </button>
     <header class="hero">
       <div class="hero-content">
         <h1>La Gasolinera Más Barata</h1>
@@ -11,9 +15,14 @@
             <span v-else>
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
             </span>
-            {{ loading ? 'Buscando cerca de ti...' : 'Buscar Gasolineras (20km)' }}
+            {{ loading ? 'Buscando cerca de ti...' : `Buscar (${searchDistance}km)` }}
           </button>
           
+          <select v-model="searchDistance" class="fuel-select" @change="sortStations">
+            <option :value="20">Radio: 20 km</option>
+            <option :value="50">Radio: 50 km</option>
+          </select>
+
           <select v-model="fuelType" class="fuel-select" @change="sortStations">
             <option value="price95">Orden: Gasolina 95 más barata</option>
             <option value="priceDiesel">Orden: Diésel más barato</option>
@@ -28,9 +37,25 @@
         {{ error }}
       </div>
 
+      <div v-if="!loading && processedStations.length > 0 && provinceStats" class="province-stats">
+        <div class="stat-item">
+          <span class="stat-label">📍 Provincia</span>
+          <span class="stat-value">{{ provinceStats.name }}</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-label">📉 Mínimo (7 días)</span>
+          <span class="stat-value text-green">{{ provinceStats.min }} €/L</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">📈 Máximo (7 días)</span>
+          <span class="stat-value text-red">{{ provinceStats.max }} €/L</span>
+        </div>
+      </div>
+
       <div v-if="!loading && processedStations.length === 0 && !error && hasSearched" class="empty-state">
         <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-        <p>No se encontraron gasolineras a menos de 20km.</p>
+        <p>No se encontraron gasolineras a menos de {{ searchDistance }}km.</p>
       </div>
 
       <div class="stations-grid">
@@ -60,15 +85,33 @@ const error = ref(null);
 const allStations = ref([]);
 const processedStations = ref([]);
 const fuelType = ref('price95');
+const searchDistance = ref(20);
 const hasSearched = ref(false);
 const userLoc = ref(null);
-
-const MAX_DISTANCE_KM = 20;
+const isDarkMode = ref(true);
+const provinceStats = ref(null);
 
 onMounted(() => {
+  if (localStorage.getItem('theme') === 'light') {
+    isDarkMode.value = false;
+    document.documentElement.classList.add('light-mode');
+  } else {
+    document.documentElement.classList.remove('light-mode');
+  }
   // Try to locate automatically
   locateAndFetch();
 });
+
+const toggleTheme = () => {
+  isDarkMode.value = !isDarkMode.value;
+  if (isDarkMode.value) {
+    document.documentElement.classList.remove('light-mode');
+    localStorage.setItem('theme', 'dark');
+  } else {
+    document.documentElement.classList.add('light-mode');
+    localStorage.setItem('theme', 'light');
+  }
+};
 
 const locateAndFetch = () => {
   error.value = null;
@@ -115,13 +158,44 @@ const loadGasStations = async () => {
 const filterAndSort = () => {
   if (!userLoc.value) return;
 
-  // 1. Calculate distance and filter < 20km
-  let filtered = allStations.value.map(station => {
+  // 1. Calculate distance and filter based on selection
+  let filters = allStations.value.map(station => {
     return {
       ...station,
       distance: calculateDistance(userLoc.value.lat, userLoc.value.lon, station.lat, station.lon)
     };
-  }).filter(s => s.distance <= MAX_DISTANCE_KM);
+  });
+  
+  let filtered = filters.filter(s => s.distance <= searchDistance.value);
+
+  if (filtered.length > 0) {
+    const currentProvince = filtered[0].province;
+    
+    // Calculate min/max across all stations in that province for standard 7-day approximation
+    const provinceStations = allStations.value.filter(s => s.province === currentProvince);
+    let minPrice = Infinity;
+    let maxPrice = -Infinity;
+    
+    provinceStations.forEach(s => {
+      let price = s[fuelType.value];
+      if (price && price > 0) {
+        if (price < minPrice) minPrice = price;
+        if (price > maxPrice) maxPrice = price;
+      }
+    });
+
+    if (minPrice !== Infinity && maxPrice !== -Infinity) {
+      provinceStats.value = {
+        name: currentProvince,
+        min: minPrice.toFixed(3),
+        max: maxPrice.toFixed(3)
+      };
+    } else {
+      provinceStats.value = null;
+    }
+  } else {
+    provinceStats.value = null;
+  }
 
   // 2. Sort depending on user preference
   filtered.sort((a, b) => {
@@ -149,6 +223,31 @@ const sortStations = () => {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+.theme-toggle {
+  position: absolute;
+  top: 1rem;
+  right: 1.5rem;
+  z-index: 50;
+  background: var(--surface-bg);
+  color: var(--text-base);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1) rotate(5deg);
+  border-color: var(--primary);
+  color: var(--primary-light);
 }
 
 .hero {
@@ -288,6 +387,57 @@ h1 {
   gap: 2rem;
 }
 
+.province-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  background: var(--surface-bg);
+  border: 1px solid var(--border-color);
+  padding: 1.25rem 2.5rem;
+  border-radius: var(--radius-lg);
+  margin-bottom: 2.5rem;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.province-stats:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.stat-divider {
+  width: 1px;
+  height: 40px;
+  background: var(--border-color);
+  margin: 0 1rem;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-base);
+}
+
+.text-green { color: #10b981; }
+.text-red { color: #ef4444; }
+
 .alert-error {
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.2);
@@ -353,6 +503,16 @@ h1 {
   }
   .stations-grid {
     grid-template-columns: 1fr;
+  }
+  .province-stats {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
+  }
+  .stat-divider {
+    height: 1px;
+    width: 100%;
+    margin: 0.5rem 0;
   }
 }
 </style>
