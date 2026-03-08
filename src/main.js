@@ -1,11 +1,12 @@
-import { createApp } from "vue";
-import App from "./App.vue";
-import { inject } from "@vercel/analytics"; // 1. Importas la función
+import { createApp } from 'vue';
+import App from './App.vue';
+import router from './router';
+import './style.css';
+import { inject } from '@vercel/analytics';
 
-try {
-  inject(); // 2. La ejecutas al arrancar la app
-} catch (error) {
-  console.warn("Vercel Analytics failed to initialize:", error);
-}
+// Initialize Analytics
+inject();
 
-createApp(App).mount("#app");
+const app = createApp(App);
+app.use(router);
+app.mount('#app');
