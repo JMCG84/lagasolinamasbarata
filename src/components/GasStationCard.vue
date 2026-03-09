@@ -8,7 +8,8 @@
         </div>
         <h3 class="station-name">{{ station.name || 'ESTACIÓN DE SERVICIO' }}</h3>
       </div>
-      <span class="distance-badge">{{ distance.toFixed(1) }} km</span>
+      <span v-if="distance !== null && distance !== undefined" class="distance-badge">{{ distance.toFixed(1) }} km</span>
+      <span v-else class="province-badge">📍 Por provincia</span>
     </div>
     <div class="location-details">
       <p class="address">{{ station.address }}</p>
@@ -55,7 +56,8 @@ const props = defineProps({
   },
   distance: {
     type: Number,
-    required: true
+    required: false,
+    default: null
   },
   activeFuel: {
     type: String,
@@ -154,6 +156,17 @@ const mapsUrl = computed(() => {
   font-weight: 600;
   white-space: nowrap;
   box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+}
+
+.province-badge {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
 }
 
 .location-details {

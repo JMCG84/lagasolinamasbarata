@@ -309,7 +309,7 @@ const searchByProvince = async () => {
         return priceA - priceB;
       });
 
-    processedStations.value = filtered.slice(0, 50);
+    processedStations.value = filtered.slice(0, 5);
 
     // Stats de provincia
     let minPrice = Infinity;
