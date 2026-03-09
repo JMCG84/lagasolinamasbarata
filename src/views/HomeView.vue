@@ -122,8 +122,8 @@ const locateAndFetch = () => {
   processedStations.value = [];
 
   if (!navigator.geolocation) {
-    error.value = "Tu navegador no soporta geolocalización.";
     loading.value = false;
+    window.alert("⚠️ Tu navegador no soporta geolocalización.\n\nPor favor, utiliza un navegador moderno como Chrome o Firefox.");
     return;
   }
 
@@ -136,9 +136,9 @@ const locateAndFetch = () => {
       await loadGasStations();
     },
     (err) => {
-      error.value = "No se pudo obtener tu ubicación. Por favor permite el acceso a la ubicación.";
       loading.value = false;
       console.error(err);
+      window.alert("⚠️ No se pudo obtener tu ubicación.\n\nPor favor, permite el acceso a la ubicación en tu navegador para poder buscar gasolineras cercanas.");
     },
     { enableHighAccuracy: true, timeout: 10000 }
   );
