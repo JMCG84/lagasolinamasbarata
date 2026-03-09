@@ -73,11 +73,43 @@
         <div v-for="i in 6" :key="i" class="skeleton-card"></div>
       </div>
     </main>
+
+    <!-- Modal: sin ubicación → buscar por provincia -->
+    <div v-if="showLocationModal" class="modal-overlay" @click.self="showLocationModal = false">
+      <div class="modal-box">
+        <div class="modal-icon">📍</div>
+        <h2 class="modal-title">Ubicación no disponible</h2>
+        <p class="modal-desc">No pudimos obtener tu ubicación. Selecciona tu zona y tipo de carburante para ver las gasolineras más baratas.</p>
+
+        <div class="modal-fields">
+          <select v-model="modalCA" class="modal-select" @change="modalProvince = ''">
+            <option value="" disabled>Comunidad Autónoma</option>
+            <option v-for="item in CA_PROVINCES" :key="item.ca" :value="item.ca">{{ item.ca }}</option>
+          </select>
+
+          <select v-model="modalProvince" class="modal-select" :disabled="!modalCA">
+            <option value="" disabled>Provincia</option>
+            <option v-for="prov in modalProvinces" :key="prov" :value="prov">{{ prov }}</option>
+          </select>
+
+          <select v-model="modalFuelType" class="modal-select">
+            <option value="price95">Gasolina 95</option>
+            <option value="price98">Gasolina 98</option>
+            <option value="priceDiesel">Diésel</option>
+          </select>
+        </div>
+
+        <button @click="searchByProvince" class="modal-btn" :disabled="!modalProvince">
+          🔍 Ver gasolineras más baratas
+        </button>
+        <button @click="showLocationModal = false" class="modal-cancel">Cerrar</button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import GasStationCard from '../components/GasStationCard.vue';
 import { fetchGasStations } from '../services/gasAPI';
 import { calculateDistance } from '../utils/distance';
@@ -92,6 +124,12 @@ const hasSearched = ref(false);
 const userLoc = ref(null);
 const isDarkMode = ref(true);
 const provinceStats = ref(null);
+
+// Modal state
+const showLocationModal = ref(false);
+const modalCA = ref('');
+const modalProvince = ref('');
+const modalFuelType = ref('price95');
 
 onMounted(() => {
   if (localStorage.getItem('theme') === 'light') {
@@ -123,7 +161,7 @@ const locateAndFetch = () => {
 
   if (!navigator.geolocation) {
     loading.value = false;
-    window.alert("⚠️ Tu navegador no soporta geolocalización.\n\nPor favor, utiliza un navegador moderno como Chrome o Firefox.");
+    showLocationModal.value = true;
     return;
   }
 
@@ -138,7 +176,7 @@ const locateAndFetch = () => {
     (err) => {
       loading.value = false;
       console.error(err);
-      window.alert("⚠️ No se pudo obtener tu ubicación.\n\nPor favor, permite el acceso a la ubicación en tu navegador para poder buscar gasolineras cercanas.");
+      showLocationModal.value = true;
     },
     { enableHighAccuracy: true, timeout: 10000 }
   );
@@ -217,6 +255,88 @@ const filterAndSort = () => {
 
 const sortStations = () => {
   filterAndSort();
+};
+
+const CA_PROVINCES = [
+  { ca: 'Andalucía', provinces: ['Almería', 'Cádiz', 'Córdoba', 'Granada', 'Huelva', 'Jaén', 'Málaga', 'Sevilla'] },
+  { ca: 'Aragón', provinces: ['Huesca', 'Teruel', 'Zaragoza'] },
+  { ca: 'Asturias', provinces: ['Asturias'] },
+  { ca: 'Illes Balears', provinces: ['Illes Balears'] },
+  { ca: 'Canarias', provinces: ['Las Palmas', 'Santa Cruz de Tenerife'] },
+  { ca: 'Cantabria', provinces: ['Cantabria'] },
+  { ca: 'Castilla-La Mancha', provinces: ['Albacete', 'Ciudad Real', 'Cuenca', 'Guadalajara', 'Toledo'] },
+  { ca: 'Castilla y León', provinces: ['Ávila', 'Burgos', 'León', 'Palencia', 'Salamanca', 'Segovia', 'Soria', 'Valladolid', 'Zamora'] },
+  { ca: 'Cataluña', provinces: ['Barcelona', 'Girona', 'Lleida', 'Tarragona'] },
+  { ca: 'Extremadura', provinces: ['Badajoz', 'Cáceres'] },
+  { ca: 'Galicia', provinces: ['A Coruña', 'Lugo', 'Ourense', 'Pontevedra'] },
+  { ca: 'La Rioja', provinces: ['La Rioja'] },
+  { ca: 'Madrid', provinces: ['Madrid'] },
+  { ca: 'Murcia', provinces: ['Murcia'] },
+  { ca: 'Navarra', provinces: ['Navarra'] },
+  { ca: 'País Vasco', provinces: ['Álava', 'Guipúzcoa', 'Vizcaya'] },
+  { ca: 'Comunitat Valenciana', provinces: ['Alicante', 'Castellón', 'Valencia'] },
+  { ca: 'Ceuta', provinces: ['Ceuta'] },
+  { ca: 'Melilla', provinces: ['Melilla'] },
+];
+
+const modalProvinces = computed(() => {
+  const found = CA_PROVINCES.find(item => item.ca === modalCA.value);
+  return found ? found.provinces : [];
+});
+
+const searchByProvince = async () => {
+  if (!modalProvince.value) return;
+  showLocationModal.value = false;
+  loading.value = true;
+  hasSearched.value = true;
+  fuelType.value = modalFuelType.value;
+  processedStations.value = [];
+  error.value = null;
+
+  try {
+    if (allStations.value.length === 0) {
+      const data = await fetchGasStations();
+      allStations.value = data;
+    }
+
+    const fuelKey = modalFuelType.value;
+
+    const filtered = allStations.value
+      .filter(s => s.province.toLowerCase() === modalProvince.value.toLowerCase())
+      .sort((a, b) => {
+        const priceA = a[fuelKey] || Infinity;
+        const priceB = b[fuelKey] || Infinity;
+        return priceA - priceB;
+      });
+
+    processedStations.value = filtered.slice(0, 50);
+
+    // Stats de provincia
+    let minPrice = Infinity;
+    let maxPrice = -Infinity;
+    filtered.forEach(s => {
+      const price = s[fuelKey];
+      if (price && price > 0) {
+        if (price < minPrice) minPrice = price;
+        if (price > maxPrice) maxPrice = price;
+      }
+    });
+
+    if (minPrice !== Infinity && maxPrice !== -Infinity) {
+      provinceStats.value = {
+        name: modalProvince.value,
+        min: minPrice.toFixed(3),
+        max: maxPrice.toFixed(3)
+      };
+    } else {
+      provinceStats.value = null;
+    }
+  } catch (err) {
+    error.value = 'Hubo un error al conectar con los datos del ministerio. Intenta más tarde.';
+    console.error(err);
+  } finally {
+    loading.value = false;
+  }
 };
 
 </script>
@@ -517,5 +637,134 @@ h1 {
     width: 100%;
     margin: 0.5rem 0;
   }
+}
+
+/* ── Modal ubicación ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal-box {
+  background: var(--surface-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 2rem 1.75rem;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55);
+  animation: modal-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modal-in {
+  from { transform: scale(0.82); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.modal-icon {
+  font-size: 2.8rem;
+  margin-bottom: 0.6rem;
+}
+
+.modal-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-base);
+  margin-bottom: 0.5rem;
+}
+
+.modal-desc {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  margin-bottom: 1.5rem;
+}
+
+.modal-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.modal-select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  background-color: var(--surface-bg);
+  color: var(--text-base);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  -webkit-appearance: auto;
+  appearance: auto;
+}
+
+.modal-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-alpha);
+}
+
+.modal-select:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.modal-btn {
+  width: 100%;
+  padding: 0.85rem;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
+  margin-bottom: 0.75rem;
+}
+
+.modal-btn:hover:not(:disabled) {
+  background: var(--primary-light);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(59, 130, 246, 0.45);
+}
+
+.modal-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.modal-cancel {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0.25rem;
+  transition: color 0.2s;
+}
+
+.modal-cancel:hover {
+  color: var(--text-base);
 }
 </style>
