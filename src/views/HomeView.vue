@@ -38,6 +38,7 @@ const hasSearched = ref(false);
 const userLoc = ref(null);
 const isDarkMode = ref(true);
 const provinceStats = ref(null);
+const lastUpdated = ref(null);
 
 // Modal state
 const showLocationModal = ref(false);
@@ -46,6 +47,15 @@ const modalProvince = ref('');
 const modalFuelType = ref('price95');
 
 // ── Computed ──
+const lastUpdatedFormatted = computed(() => {
+  if (!lastUpdated.value) return null;
+  const now = new Date();
+  const diff = Math.floor((now - lastUpdated.value) / 60000); // Minutes
+  if (diff < 1) return 'hace menos de un minuto';
+  if (diff === 1) return 'hace 1 minuto';
+  return `hace ${diff} minutos`;
+});
+
 const modalProvinces = computed(() => {
   const found = CA_PROVINCES.find(item => item.ca === modalCA.value);
   return found ? found.provinces : [];
@@ -108,6 +118,7 @@ const loadGasStations = async () => {
   try {
     const data = await fetchGasStations();
     allStations.value = data;
+    lastUpdated.value = new Date();
     filterAndSort();
   } catch (err) {
     error.value = "Hubo un error al conectar con los datos del ministerio. Intenta más tarde.";
@@ -303,7 +314,13 @@ const searchByProvince = async () => {
           :station="station"
           :distance="station.distance"
           :activeFuel="fuelType"
+          :provinceStats="provinceStats"
         />
+      </div>
+
+      <div v-if="lastUpdatedFormatted" class="update-note">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><polyline points="12 6 12 12 16 14"></polyline></svg>
+        Datos actualizados según el Ministerio {{ lastUpdatedFormatted }}.
       </div>
 
       <div v-if="loading" class="loading-grid">
@@ -589,6 +606,22 @@ h1 {
 
 .empty-state p {
   font-size: 1.25rem;
+}
+
+.update-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.update-note .icon {
+  flex-shrink: 0;
 }
 
 .skeleton-card {

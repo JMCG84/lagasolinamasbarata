@@ -15,6 +15,10 @@ const props = defineProps({
   activeFuel: {
     type: String,
     default: 'distance'
+  },
+  provinceStats: {
+    type: Object,
+    default: null
   }
 });
 
@@ -55,15 +59,24 @@ const mapsUrl = computed(() => {
     <div class="prices-container">
       <div v-if="(activeFuel === 'price95' || activeFuel === 'distance') && station.price95" class="price-box">
         <span class="fuel-type">Gasolina 95</span>
-        <span class="price-value">{{ station.price95.toFixed(3) }} €/L</span>
+        <span class="price-value" :class="{ 
+          'is-cheapest': provinceStats && station.price95.toFixed(3) === provinceStats.min,
+          'is-expensive': provinceStats && station.price95.toFixed(3) === provinceStats.max
+        }">{{ station.price95.toFixed(3) }} €/L</span>
       </div>
       <div v-if="(activeFuel === 'price98' || activeFuel === 'distance') && station.price98" class="price-box">
         <span class="fuel-type">Gasolina 98</span>
-        <span class="price-value">{{ station.price98.toFixed(3) }} €/L</span>
+        <span class="price-value" :class="{ 
+          'is-cheapest': provinceStats && station.price98.toFixed(3) === provinceStats.min,
+          'is-expensive': provinceStats && station.price98.toFixed(3) === provinceStats.max
+        }">{{ station.price98.toFixed(3) }} €/L</span>
       </div>
       <div v-if="(activeFuel === 'priceDiesel' || activeFuel === 'distance') && station.priceDiesel" class="price-box">
         <span class="fuel-type">Diésel</span>
-        <span class="price-value">{{ station.priceDiesel.toFixed(3) }} €/L</span>
+        <span class="price-value" :class="{ 
+          'is-cheapest': provinceStats && station.priceDiesel.toFixed(3) === provinceStats.min,
+          'is-expensive': provinceStats && station.priceDiesel.toFixed(3) === provinceStats.max
+        }">{{ station.priceDiesel.toFixed(3) }} €/L</span>
       </div>
     </div>
     
@@ -223,6 +236,16 @@ const mapsUrl = computed(() => {
   font-size: 1.25rem;
   font-weight: 800;
   color: var(--text-base);
+  transition: color 0.3s ease;
+}
+
+.price-value.is-cheapest {
+  color: #10b981; /* Verde intenso */
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+}
+
+.price-value.is-expensive {
+  color: #ef4444; /* Rojo */
 }
 
 .card-footer {
