@@ -1,3 +1,39 @@
+<script setup>
+import { computed, ref } from 'vue';
+import { getStationLogo } from '../utils/logos';
+
+const props = defineProps({
+  station: {
+    type: Object,
+    required: true
+  },
+  distance: {
+    type: Number,
+    required: false,
+    default: null
+  },
+  activeFuel: {
+    type: String,
+    default: 'distance'
+  }
+});
+
+const initialLogo = getStationLogo(props.station.name);
+const imageError = ref(false);
+
+const logoUrl = computed(() => {
+  return imageError.value ? null : initialLogo;
+});
+
+const handleImageError = () => {
+  imageError.value = true;
+};
+
+const mapsUrl = computed(() => {
+  return `https://www.google.com/maps/dir/?api=1&destination=${props.station.lat},${props.station.lon}`;
+});
+</script>
+
 <template>
   <div class="gas-card">
     <div class="card-header">
@@ -44,42 +80,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { computed, ref } from 'vue';
-import { getStationLogo } from '../utils/logos';
-
-const props = defineProps({
-  station: {
-    type: Object,
-    required: true
-  },
-  distance: {
-    type: Number,
-    required: false,
-    default: null
-  },
-  activeFuel: {
-    type: String,
-    default: 'distance'
-  }
-});
-
-const initialLogo = getStationLogo(props.station.name);
-const imageError = ref(false);
-
-const logoUrl = computed(() => {
-  return imageError.value ? null : initialLogo;
-});
-
-const handleImageError = () => {
-  imageError.value = true;
-};
-
-const mapsUrl = computed(() => {
-  return `https://www.google.com/maps/dir/?api=1&destination=${props.station.lat},${props.station.lon}`;
-});
-</script>
 
 <style scoped>
 .gas-card {

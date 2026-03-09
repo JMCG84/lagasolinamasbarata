@@ -1,3 +1,6 @@
+<script setup>
+</script>
+
 <template>
   <router-view />
   <footer class="site-footer">
@@ -19,9 +22,6 @@
     </div>
   </footer>
 </template>
-
-<script setup>
-</script>
 
 <style>
 .site-footer {

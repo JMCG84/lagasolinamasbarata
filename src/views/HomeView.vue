@@ -1,119 +1,33 @@
-<template>
-  <div class="home-view">
-    <button @click="toggleTheme" class="theme-toggle" aria-label="Cambiar tema">
-      <svg v-if="isDarkMode" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-      <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-    </button>
-    <header class="hero">
-      <div class="hero-content">
-        <h1>La Gasolinera Más Barata</h1>
-        <p>Ahorra cada vez que llenes el tanque. Encuentra las mejores opciones cerca de ti.</p>
-        
-        <div class="controls">
-          <button @click="locateAndFetch" class="btn-primary" :disabled="loading">
-            <span v-if="loading" class="spinner"></span>
-            <span v-else>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-            </span>
-            {{ loading ? 'Buscando cerca de ti...' : `Buscar (${searchDistance}km)` }}
-          </button>
-          
-          <select v-model="searchDistance" class="fuel-select" @change="sortStations">
-            <option :value="20">Radio: 20 km</option>
-            <option :value="50">Radio: 50 km</option>
-          </select>
-
-          <select v-model="fuelType" class="fuel-select" @change="sortStations">
-            <option value="price95">Orden: Gasolina 95 más barata</option>
-            <option value="price98">Orden: Gasolina 98 más barata</option>
-            <option value="priceDiesel">Orden: Diésel más barato</option>
-            <option value="distance">Orden: Más cercanas primero</option>
-          </select>
-        </div>
-      </div>
-    </header>
-
-    <main class="container">
-      <div v-if="error" class="alert-error">
-        {{ error }}
-      </div>
-
-      <div v-if="!loading && processedStations.length > 0 && provinceStats" class="province-stats">
-        <div class="stat-item">
-          <span class="stat-label">📍 Provincia</span>
-          <span class="stat-value">{{ provinceStats.name }}</span>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-item">
-          <span class="stat-label">📉 Mínimo (7 días)</span>
-          <span class="stat-value text-green">{{ provinceStats.min }} €/L</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">📈 Máximo (7 días)</span>
-          <span class="stat-value text-red">{{ provinceStats.max }} €/L</span>
-        </div>
-      </div>
-
-      <div v-if="!loading && processedStations.length === 0 && !error && hasSearched" class="empty-state">
-        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-        <p>No se encontraron gasolineras a menos de {{ searchDistance }}km.</p>
-      </div>
-
-      <div class="stations-grid">
-        <GasStationCard 
-          v-for="station in processedStations" 
-          :key="station.id"
-          :station="station"
-          :distance="station.distance"
-          :activeFuel="fuelType"
-        />
-      </div>
-
-      <div v-if="loading" class="loading-grid">
-        <div v-for="i in 6" :key="i" class="skeleton-card"></div>
-      </div>
-    </main>
-
-    <!-- Modal: sin ubicación → buscar por provincia -->
-    <div v-if="showLocationModal" class="modal-overlay" @click.self="showLocationModal = false">
-      <div class="modal-box">
-        <div class="modal-icon">📍</div>
-        <h2 class="modal-title">Ubicación no disponible</h2>
-        <p class="modal-desc">No pudimos obtener tu ubicación. Selecciona tu zona y tipo de carburante para ver las gasolineras más baratas.</p>
-
-        <div class="modal-fields">
-          <select v-model="modalCA" class="modal-select" @change="modalProvince = ''">
-            <option value="" disabled>Comunidad Autónoma</option>
-            <option v-for="item in CA_PROVINCES" :key="item.ca" :value="item.ca">{{ item.ca }}</option>
-          </select>
-
-          <select v-model="modalProvince" class="modal-select" :disabled="!modalCA">
-            <option value="" disabled>Provincia</option>
-            <option v-for="prov in modalProvinces" :key="prov" :value="prov">{{ prov }}</option>
-          </select>
-
-          <select v-model="modalFuelType" class="modal-select">
-            <option value="price95">Gasolina 95</option>
-            <option value="price98">Gasolina 98</option>
-            <option value="priceDiesel">Diésel</option>
-          </select>
-        </div>
-
-        <button @click="searchByProvince" class="modal-btn" :disabled="!modalProvince">
-          🔍 Ver gasolineras más baratas
-        </button>
-        <button @click="showLocationModal = false" class="modal-cancel">Cerrar</button>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import GasStationCard from '../components/GasStationCard.vue';
 import { fetchGasStations } from '../services/gasAPI';
 import { calculateDistance } from '../utils/distance';
 
+// ── Constants ──
+const CA_PROVINCES = [
+  { ca: 'Andalucía', provinces: ['Almería', 'Cádiz', 'Córdoba', 'Granada', 'Huelva', 'Jaén', 'Málaga', 'Sevilla'] },
+  { ca: 'Aragón', provinces: ['Huesca', 'Teruel', 'Zaragoza'] },
+  { ca: 'Asturias', provinces: ['Asturias'] },
+  { ca: 'Illes Balears', provinces: ['Illes Balears'] },
+  { ca: 'Canarias', provinces: ['Las Palmas', 'Santa Cruz de Tenerife'] },
+  { ca: 'Cantabria', provinces: ['Cantabria'] },
+  { ca: 'Castilla-La Mancha', provinces: ['Albacete', 'Ciudad Real', 'Cuenca', 'Guadalajara', 'Toledo'] },
+  { ca: 'Castilla y León', provinces: ['Ávila', 'Burgos', 'León', 'Palencia', 'Salamanca', 'Segovia', 'Soria', 'Valladolid', 'Zamora'] },
+  { ca: 'Cataluña', provinces: ['Barcelona', 'Girona', 'Lleida', 'Tarragona'] },
+  { ca: 'Extremadura', provinces: ['Badajoz', 'Cáceres'] },
+  { ca: 'Galicia', provinces: ['A Coruña', 'Lugo', 'Ourense', 'Pontevedra'] },
+  { ca: 'La Rioja', provinces: ['La Rioja'] },
+  { ca: 'Madrid', provinces: ['Madrid'] },
+  { ca: 'Murcia', provinces: ['Murcia'] },
+  { ca: 'Navarra', provinces: ['Navarra'] },
+  { ca: 'País Vasco', provinces: ['Álava', 'Guipúzcoa', 'Vizcaya'] },
+  { ca: 'Comunitat Valenciana', provinces: ['Alicante', 'Castellón', 'Valencia'] },
+  { ca: 'Ceuta', provinces: ['Ceuta'] },
+  { ca: 'Melilla', provinces: ['Melilla'] },
+];
+
+// ── State ──
 const loading = ref(false);
 const error = ref(null);
 const allStations = ref([]);
@@ -131,6 +45,13 @@ const modalCA = ref('');
 const modalProvince = ref('');
 const modalFuelType = ref('price95');
 
+// ── Computed ──
+const modalProvinces = computed(() => {
+  const found = CA_PROVINCES.find(item => item.ca === modalCA.value);
+  return found ? found.provinces : [];
+});
+
+// ── Lifecycle ──
 onMounted(() => {
   if (localStorage.getItem('theme') === 'light') {
     isDarkMode.value = false;
@@ -142,6 +63,7 @@ onMounted(() => {
   locateAndFetch();
 });
 
+// ── Methods ──
 const toggleTheme = () => {
   isDarkMode.value = !isDarkMode.value;
   if (isDarkMode.value) {
@@ -257,33 +179,6 @@ const sortStations = () => {
   filterAndSort();
 };
 
-const CA_PROVINCES = [
-  { ca: 'Andalucía', provinces: ['Almería', 'Cádiz', 'Córdoba', 'Granada', 'Huelva', 'Jaén', 'Málaga', 'Sevilla'] },
-  { ca: 'Aragón', provinces: ['Huesca', 'Teruel', 'Zaragoza'] },
-  { ca: 'Asturias', provinces: ['Asturias'] },
-  { ca: 'Illes Balears', provinces: ['Illes Balears'] },
-  { ca: 'Canarias', provinces: ['Las Palmas', 'Santa Cruz de Tenerife'] },
-  { ca: 'Cantabria', provinces: ['Cantabria'] },
-  { ca: 'Castilla-La Mancha', provinces: ['Albacete', 'Ciudad Real', 'Cuenca', 'Guadalajara', 'Toledo'] },
-  { ca: 'Castilla y León', provinces: ['Ávila', 'Burgos', 'León', 'Palencia', 'Salamanca', 'Segovia', 'Soria', 'Valladolid', 'Zamora'] },
-  { ca: 'Cataluña', provinces: ['Barcelona', 'Girona', 'Lleida', 'Tarragona'] },
-  { ca: 'Extremadura', provinces: ['Badajoz', 'Cáceres'] },
-  { ca: 'Galicia', provinces: ['A Coruña', 'Lugo', 'Ourense', 'Pontevedra'] },
-  { ca: 'La Rioja', provinces: ['La Rioja'] },
-  { ca: 'Madrid', provinces: ['Madrid'] },
-  { ca: 'Murcia', provinces: ['Murcia'] },
-  { ca: 'Navarra', provinces: ['Navarra'] },
-  { ca: 'País Vasco', provinces: ['Álava', 'Guipúzcoa', 'Vizcaya'] },
-  { ca: 'Comunitat Valenciana', provinces: ['Alicante', 'Castellón', 'Valencia'] },
-  { ca: 'Ceuta', provinces: ['Ceuta'] },
-  { ca: 'Melilla', provinces: ['Melilla'] },
-];
-
-const modalProvinces = computed(() => {
-  const found = CA_PROVINCES.find(item => item.ca === modalCA.value);
-  return found ? found.provinces : [];
-});
-
 const searchByProvince = async () => {
   if (!modalProvince.value) return;
   showLocationModal.value = false;
@@ -338,8 +233,117 @@ const searchByProvince = async () => {
     loading.value = false;
   }
 };
-
 </script>
+
+<template>
+  <div class="home-view">
+    <button @click="toggleTheme" class="theme-toggle" aria-label="Cambiar tema">
+      <svg v-if="isDarkMode" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+    </button>
+    <header class="hero">
+      <div class="hero-content">
+        <h1>La Gasolinera Más Barata</h1>
+        <p>Ahorra cada vez que llenes el tanque. Encuentra las mejores opciones cerca de ti.</p>
+        
+        <div class="controls">
+          <button @click="locateAndFetch" class="btn-primary" :disabled="loading">
+            <span v-if="loading" class="spinner"></span>
+            <span v-else>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            </span>
+            {{ loading ? 'Buscando cerca de ti...' : `Buscar (${searchDistance}km)` }}
+          </button>
+          
+          <select v-model="searchDistance" class="fuel-select" @change="sortStations">
+            <option :value="20">Radio: 20 km</option>
+            <option :value="50">Radio: 50 km</option>
+          </select>
+
+          <select v-model="fuelType" class="fuel-select" @change="sortStations">
+            <option value="price95">Orden: Gasolina 95 más barata</option>
+            <option value="price98">Orden: Gasolina 98 más barata</option>
+            <option value="priceDiesel">Orden: Diésel más barato</option>
+            <option value="distance">Orden: Más cercanas primero</option>
+          </select>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <div v-if="error" class="alert-error">
+        {{ error }}
+      </div>
+
+      <div v-if="!loading && processedStations.length > 0 && provinceStats" class="province-stats">
+        <div class="stat-item">
+          <span class="stat-label">📍 Provincia</span>
+          <span class="stat-value">{{ provinceStats.name }}</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-label">📉 Mínimo (7 días)</span>
+          <span class="stat-value text-green">{{ provinceStats.min }} €/L</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">📈 Máximo (7 días)</span>
+          <span class="stat-value text-red">{{ provinceStats.max }} €/L</span>
+        </div>
+      </div>
+
+      <div v-if="!loading && processedStations.length === 0 && !error && hasSearched" class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <p>No se encontraron gasolineras a menos de {{ searchDistance }}km.</p>
+      </div>
+
+      <div class="stations-grid">
+        <GasStationCard 
+          v-for="station in processedStations" 
+          :key="station.id"
+          :station="station"
+          :distance="station.distance"
+          :activeFuel="fuelType"
+        />
+      </div>
+
+      <div v-if="loading" class="loading-grid">
+        <div v-for="i in 6" :key="i" class="skeleton-card"></div>
+      </div>
+    </main>
+
+    <!-- Modal: sin ubicación → buscar por provincia -->
+    <div v-if="showLocationModal" class="modal-overlay" @click.self="showLocationModal = false">
+      <div class="modal-box">
+        <div class="modal-icon">📍</div>
+        <h2 class="modal-title">Ubicación no disponible</h2>
+        <p class="modal-desc">No pudimos obtener tu ubicación. Selecciona tu zona y tipo de carburante para ver las gasolineras más baratas.</p>
+
+        <div class="modal-fields">
+          <select v-model="modalCA" class="modal-select" @change="modalProvince = ''">
+            <option value="" disabled>Comunidad Autónoma</option>
+            <option v-for="item in CA_PROVINCES" :key="item.ca" :value="item.ca">{{ item.ca }}</option>
+          </select>
+
+          <select v-model="modalProvince" class="modal-select" :disabled="!modalCA">
+            <option value="" disabled>Provincia</option>
+            <option v-for="prov in modalProvinces" :key="prov" :value="prov">{{ prov }}</option>
+          </select>
+
+          <select v-model="modalFuelType" class="modal-select">
+            <option value="price95">Gasolina 95</option>
+            <option value="price98">Gasolina 98</option>
+            <option value="priceDiesel">Diésel</option>
+          </select>
+        </div>
+
+        <button @click="searchByProvince" class="modal-btn" :disabled="!modalProvince">
+          🔍 Ver gasolineras más baratas
+        </button>
+        <button @click="showLocationModal = false" class="modal-cancel">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .home-view {
