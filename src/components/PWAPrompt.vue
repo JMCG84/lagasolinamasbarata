@@ -5,7 +5,10 @@ const showPrompt = ref(false);
 
 const isIos = () => {
   const userAgent = window.navigator.userAgent.toLowerCase();
-  return /iphone|ipad|ipod/.test(userAgent);
+  // Classic iOS (iPhone/iPod/Old iPad)
+  if (/iphone|ipad|ipod/.test(userAgent)) return true;
+  // Modern iPadOS (Identifies as MacIntel with touch support)
+  return navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
 };
 
 const isInStandaloneMode = () => 
