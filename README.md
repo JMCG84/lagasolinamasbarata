@@ -6,8 +6,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
 > Encuentra las gasolineras más baratas cerca de ti en tiempo real con datos oficiales del Ministerio de Industria de España.
-
-![Preview](https://via.placeholder.com/800x400/667eea/ffffff?text=Screenshot+del+proyecto)
+<img width="1366" height="768" alt="Image" src="https://github.com/user-attachments/assets/565e1389-d84b-4a93-a498-3fded79906c1" />
 
 ## Características
 
