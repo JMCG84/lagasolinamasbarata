@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from "vue";
 import GasStationCard from "../components/GasStationCard.vue";
 import GasCalculator from "../components/GasCalculator.vue";
 import PromotionsModal from "../components/PromotionsModal.vue";
+import NotificationToast from "../components/NotificationToast.vue";
 import { fetchGasStations } from "../services/gasAPI";
 import { calculateDistance } from "../utils/distance";
 
@@ -86,6 +87,22 @@ const showCalculator = ref(false);
 const showPromotions = ref(false);
 const calcInitialPrice = ref(0);
 
+// Notification Toast state
+const toastState = ref({
+  show: false,
+  message: '',
+  type: 'info'
+});
+
+const showNotification = (message, type = 'info') => {
+  toastState.value.show = false; // Reset if already showing
+  setTimeout(() => {
+    toastState.value.message = message;
+    toastState.value.type = type;
+    toastState.value.show = true;
+  }, 50);
+};
+
 const openCalculator = (price = 0) => {
   calcInitialPrice.value = typeof price === "number" ? price : 0;
   showCalculator.value = true;
@@ -134,14 +151,21 @@ const toggleFavorite = (id) => {
   const index = favorites.value.indexOf(id);
   if (index === -1) {
     favorites.value.push(id);
+    showNotification("Gasolinera añadida a favoritos", "success");
   } else {
     favorites.value.splice(index, 1);
+    showNotification("Gasolinera eliminada de favoritos", "info");
   }
   localStorage.setItem("favorites", JSON.stringify(favorites.value));
 };
 
 const toggleOnlyFavorites = () => {
   showOnlyFavorites.value = !showOnlyFavorites.value;
+  if (showOnlyFavorites.value) {
+    showNotification("Filtrando por favoritas", "info");
+  } else {
+    showNotification("Mostrando todas las estaciones", "info");
+  }
   filterAndSort();
 };
 
@@ -620,6 +644,13 @@ const searchByProvince = async () => {
         @close="showCalculator = false" />
 
       <PromotionsModal :show="showPromotions" @close="showPromotions = false" />
+
+      <NotificationToast 
+        :show="toastState.show" 
+        :message="toastState.message" 
+        :type="toastState.type" 
+        @close="toastState.show = false" 
+      />
 
       <div v-if="lastUpdatedFormatted" class="update-note">
         <svg
