@@ -1,7 +1,9 @@
 <script setup>
+import PWAPrompt from './components/PWAPrompt.vue';
 </script>
 
 <template>
+  <PWAPrompt />
   <router-view />
   <footer class="site-footer">
     <div class="footer-content">
