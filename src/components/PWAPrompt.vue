@@ -1,7 +1,9 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 
 const showPrompt = ref(false);
+const deferredPrompt = ref(null);
+const platformType = ref(''); // 'ios' or 'android'
 
 const isIos = () => {
   const userAgent = window.navigator.userAgent.toLowerCase();
@@ -14,23 +16,62 @@ const isIos = () => {
 const isInStandaloneMode = () => 
   ('standalone' in window.navigator) && (window.navigator.standalone);
 
+const handleBeforeInstallPrompt = (e) => {
+  // Prevent Chrome 67 and earlier from automatically showing the prompt
+  e.preventDefault();
+  // Stash the event so it can be triggered later.
+  deferredPrompt.value = e;
+  
+  // Show the prompt for Android/Desktop Chrome
+  if (!isInStandaloneMode()) {
+    const lastPrompt = localStorage.getItem('pwa_prompt_android');
+    const now = new Date().getTime();
+    if (!lastPrompt || (now - parseInt(lastPrompt) > 2 * 24 * 60 * 60 * 1000)) {
+       platformType.value = 'android';
+       showPrompt.value = true;
+    }
+  }
+};
+
 onMounted(() => {
-  // Check if it's iOS and not already installed/standalone
+  // IOS detection (Static)
   if (isIos() && !isInStandaloneMode()) {
-    // Check if we already showed it recently to not be annoying
     const lastPrompt = localStorage.getItem('pwa_prompt_ios');
     const now = new Date().getTime();
-    
-    // Show if never shown or if it's been more than 3 days
     if (!lastPrompt || (now - parseInt(lastPrompt) > 3 * 24 * 60 * 60 * 1000)) {
+      platformType.value = 'ios';
       showPrompt.value = true;
     }
   }
+
+  // Android/Chrome detection (Event based)
+  window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 });
+
+onUnmounted(() => {
+  window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+});
+
+const installPwa = async () => {
+  if (!deferredPrompt.value) return;
+  // Show the install prompt
+  deferredPrompt.value.prompt();
+  // Wait for the user to respond to the prompt
+  const { outcome } = await deferredPrompt.value.userChoice;
+  if (outcome === 'accepted') {
+    console.log('User accepted the PWA install');
+  } else {
+    console.log('User dismissed the PWA install');
+  }
+  // We've used the prompt, and can't use it again
+  deferredPrompt.value = null;
+  showPrompt.value = false;
+};
 
 const closePrompt = () => {
   showPrompt.value = false;
-  localStorage.setItem('pwa_prompt_ios', new Date().getTime().toString());
+  const storageKey = platformType.value === 'ios' ? 'pwa_prompt_ios' : 'pwa_prompt_android';
+  localStorage.setItem(storageKey, new Date().getTime().toString());
 };
 </script>
 
@@ -45,8 +86,10 @@ const closePrompt = () => {
           </div>
           <div class="text-content">
             <h3>Instala la App</h3>
-            <p>Añádela a tu pantalla de inicio para acceder rápido y sin conexión:</p>
-            <div class="steps">
+            <p v-if="platformType === 'ios'">Añádela a tu pantalla de inicio para acceder rápido y sin conexión:</p>
+            <p v-else>Disfruta de una mejor experiencia instalando la app en tu dispositivo.</p>
+            
+            <div v-if="platformType === 'ios'" class="steps">
               <span>Pulsa </span>
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="share-icon">
                 <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
@@ -55,6 +98,10 @@ const closePrompt = () => {
               </svg>
               <span> y luego <strong>"Añadir a pantalla de inicio"</strong>.</span>
             </div>
+            
+            <button v-else class="install-btn" @click="installPwa">
+              Instalar Ahora
+            </button>
           </div>
         </div>
       </div>
@@ -140,6 +187,23 @@ const closePrompt = () => {
 .share-icon {
   color: var(--primary);
   margin: 0 0.1rem;
+}
+
+.install-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s;
+}
+
+.install-btn:hover {
+  background: var(--primary-dark);
 }
 
 /* Animations */
