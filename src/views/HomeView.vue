@@ -270,36 +270,40 @@ const searchByProvince = async () => {
         <p>Ahorra cada vez que llenes el tanque. Encuentra las mejores opciones cerca de ti.</p>
         
         <div class="controls-wrapper">
-          <div class="main-controls">
-            <button @click="locateAndFetch" class="btn-primary" :disabled="loading">
+          <div class="controls-toolbar">
+            <button @click="locateAndFetch" class="control-btn btn-lookup" :disabled="loading">
               <span v-if="loading" class="spinner"></span>
-              <span v-else>
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-              </span>
-              {{ loading ? 'Buscando...' : `Buscar` }}
+              <template v-else>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                <span>Buscar</span>
+              </template>
             </button>
             
-            <select v-model="searchDistance" class="fuel-select" @change="sortStations">
-              <option :value="20">Radio: 20 km</option>
-              <option :value="50">Radio: 50 km</option>
-            </select>
+            <div class="control-select-wrapper" title="Filtrar por distancia">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="select-icon"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <select v-model="searchDistance" class="control-select" @change="sortStations">
+                <option :value="20">Radio: 20 km</option>
+                <option :value="50">Radio: 50 km</option>
+              </select>
+            </div>
 
-            <select v-model="fuelType" class="fuel-select" @change="sortStations">
-              <option value="price95">Orden: Gasolina 95 más barata</option>
-              <option value="price98">Orden: Gasolina 98 más barata</option>
-              <option value="priceDiesel">Orden: Diésel más barato</option>
-              <option value="distance">Orden: Más cercanas primero</option>
-            </select>
-          </div>
+            <div class="control-select-wrapper" title="Ordenar por combustible o cercanía">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="select-icon icon-fuel"><path d="M6 2L3 6v15a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+              <select v-model="fuelType" class="control-select" @change="sortStations">
+                <option value="price95">Gasolina 95</option>
+                <option value="price98">Gasolina 98</option>
+                <option value="priceDiesel">Diésel</option>
+                <option value="distance">Más cercanas</option>
+              </select>
+            </div>
 
-          <div class="secondary-controls">
-            <button @click="openCalculator()" class="btn-secondary" title="Calculadora de consumo y precio">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><path d="M8 14h2"/><path d="M14 14h2"/><path d="M8 18h2"/><path d="M14 18h2"/></svg>
-              <span>Calculadora de Consumo</span>
+            <button @click="openCalculator()" class="control-btn btn-util" title="Calcular consumo">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calc"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><path d="M8 14h2"/><path d="M14 14h2"/><path d="M8 18h2"/><path d="M14 18h2"/></svg>
+              <span>Calcular Consumo</span>
             </button>
 
-            <button @click="showPromotions = true" class="btn-secondary" title="Ver promociones y ofertas actuales">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <button @click="showPromotions = true" class="control-btn btn-util" title="Promociones y ofertas">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-star"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
               <span>Promociones y Ofertas</span>
             </button>
           </div>
@@ -400,6 +404,13 @@ const searchByProvince = async () => {
   </div>
 </template>
 
+<style>
+/* Estilos globales para modo claro (fuera de scoped para detectar .light-mode en html) */
+html.light-mode .icon-fuel { color: #dc2626 !important; stroke: #dc2626 !important; }
+html.light-mode .icon-calc { color: #475569 !important; stroke: #475569 !important; }
+html.light-mode .icon-star { color: #ca8a04 !important; stroke: #ca8a04 !important; fill: rgba(234, 179, 8, 0.1); }
+</style>
+
 <style scoped>
 .home-view {
   min-height: 100vh;
@@ -460,7 +471,7 @@ const searchByProvince = async () => {
 .hero-content {
   position: relative;
   z-index: 1;
-  max-width: 800px;
+  max-width: 1100px;
   margin: 0 auto;
 }
 
@@ -485,109 +496,110 @@ h1 {
 }
 
 .controls-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  align-items: center;
-}
-
-.main-controls {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.secondary-controls {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
+  margin-top: 2rem;
   width: 100%;
 }
 
-.fuel-select {
-  padding: 0.75rem 1.25rem;
-  border-radius: var(--radius-lg);
+.controls-toolbar {
+  display: flex;
+  background: var(--surface-bg);
   border: 1px solid var(--border-color);
-  background-color: var(--surface-bg);
-  color: var(--text-base);
-  font-family: inherit;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.2s;
-  outline: none;
+  padding: 0.4rem;
+  border-radius: var(--radius-xl);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4);
+  gap: 0.5rem;
+  width: 100%;
+  margin: 0 auto;
 }
 
-.fuel-select:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-alpha);
+.control-btn, .control-select-wrapper {
+  flex: 1 1 auto;
 }
 
-.btn-primary {
-  display: inline-flex;
+.control-btn {
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
+  padding: 0.75rem 0.6rem;
+  border-radius: var(--radius-lg);
+  border: none;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-lookup {
   background: var(--primary);
   color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: var(--radius-lg);
-  font-weight: 600;
-  font-size: 1rem;
-  text-decoration: none;
-  cursor: pointer;
-  border: none;
-  box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
-  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+  min-width: 110px;
+  flex: 1;
 }
 
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
-  background: var(--primary-light);
-}
-
-.btn-primary:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  background: var(--surface-bg);
+.btn-util {
+  background: transparent;
   color: var(--text-base);
-  padding: 0.75rem 1.25rem;
-  border-radius: var(--radius-lg);
-  font-weight: 700;
-  font-size: 0.95rem;
-  cursor: pointer;
   border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
-  transition: all 0.2s;
-  flex: 0 1 200px;
+  flex: 1.4;
+  min-width: 160px;
 }
 
-.btn-secondary:hover {
+.btn-util .icon {
+  flex-shrink: 0;
+  color: var(--primary-light);
+}
+
+.control-select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 130px;
+  flex: 1.2;
+}
+
+.select-icon {
+  position: absolute;
+  left: 0.6rem;
+  color: var(--primary-light);
+  pointer-events: none;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.control-select {
+  width: 100%;
+  appearance: none;
+  padding: 0.75rem 1.6rem 0.75rem 2.2rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
   background: var(--bg-color);
+  color: var(--text-base);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.4rem center;
+  background-size: 0.7rem;
+}
+
+.control-select:focus {
   border-color: var(--primary-light);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 0 0 3px var(--primary-alpha);
 }
 
 .spinner {
   display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(255,255,255,0.3);
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255,255,255,0.3);
   border-radius: 50%;
   border-top-color: white;
-  animation: spin 1s ease-in-out infinite;
+  animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
@@ -731,12 +743,23 @@ h1 {
   100% { transform: translateX(100%); }
 }
 
-@media (max-width: 640px) {
-  .main-controls, .secondary-controls {
-    flex-direction: column;
-    width: 100%;
+@media (max-width: 900px) {
+  .controls-toolbar {
+    flex-wrap: wrap;
+    justify-content: center;
   }
-  .fuel-select, .btn-primary, .btn-secondary {
+  .control-btn, .control-select-wrapper {
+    flex: 1 1 200px;
+  }
+}
+
+@media (max-width: 640px) {
+  .controls-toolbar {
+    flex-direction: column;
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+  .control-btn, .control-select-wrapper {
     width: 100%;
     flex: none;
   }
