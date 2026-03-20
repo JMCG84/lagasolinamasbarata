@@ -12,7 +12,8 @@ El funcionamiento interno de la aplicacion consta de las siguientes etapas princ
 2. Sincronizacion de Precios: Se ejecuta una consulta asincrona hacia la API REST oficial en tiempo real del Ministerio para la Transicion Ecologica. Esta peticion esta protegida por un sistema de proxy proxy-fallback para eludir potenciales problemas de CORS.
 3. Calculo Vectorial: Mediante algoritmos matematicos en su aplicacion cliente, especificamente a traves de la Formula de Haversine, la aplicacion procesa un gran volumen de datos y descarta aquellas gasolineras ubicadas a mas de 20 kilometros en base a la distancia esferica de la tierra.
 4. Identidad Visual: Un utilitario se encarga de procesar las cadenas de texto correspondientes al nombre de cada estacion para asignar y pintar vectores graficos (SVG) que representan el logotipo de la marca correspondiente (ej. Repsol, BP, Cepsa).
-5. Interaccion de Usuario: Los usuarios interactuan con un panel de controles permitiendo el re-ordenamiento instantaneo de resultados segun tres preferencias: cercania, carburante 95 mas asequible o carburante diesel mas asequible.
+5. Interaccion de Usuario: Los usuarios interactuan con una **barra de controles unificada** de alta usabilidad que permite el filtrado instantaneo por radio (20km/50km), tipo de carburante y cercania.
+6. Herramientas de Ahorro: Incluye una **calculadora de consumo** en tiempo real y un panel de **promociones y ofertas** vigentes de las principales redes de estaciones (Repsol, Cepsa, etc.).
 
 ## Despliegue
 Al tratarse de un cliente ligero que externaliza sus llamadas al servidor ministerial, la aplicacion utiliza el patron estatico proporcionado por el compilador 'Vite'.
@@ -25,4 +26,5 @@ Por medio de esta prestacion, cada nuevo fragmento de codigo subido (push) a la 
 - Vite
 - Routing Inteligente
 - Vanilla CSS enfocado a estandar moderno (Dark Mode y Glassmorphism)
+- **Personalizacion Tematica**: Iconografía dinamica con colores diferenciados en Modo Claro (Surtidor Rojo, Calculadora Gris, Estrella Amarilla).
 - Fetch API y Geolocalizacion HTML5
