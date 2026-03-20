@@ -46,7 +46,8 @@ function formatData(stations) {
       price95,
       price98,
       priceDiesel,
-      margin: station['Margen']
+      margin: station['Margen'],
+      isRestricted: (station['Tipo Venta'] === 'R')
     };
   }).filter(station => !isNaN(station.lat) && !isNaN(station.lon));
 }
