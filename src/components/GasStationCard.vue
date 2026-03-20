@@ -19,10 +19,14 @@ const props = defineProps({
   provinceStats: {
     type: Object,
     default: null
+  },
+  isFavorite: {
+    type: Boolean,
+    default: false
   }
 });
 
-const emit = defineEmits(['calculate']);
+const emit = defineEmits(['calculate', 'toggle-favorite']);
 
 const initialLogo = getStationLogo(props.station.name);
 const imageError = ref(false);
@@ -50,8 +54,19 @@ const mapsUrl = computed(() => {
         </div>
         <h3 class="station-name">{{ station.name || 'ESTACIÓN DE SERVICIO' }}</h3>
       </div>
-      <span v-if="distance !== null && distance !== undefined" class="distance-badge">{{ distance.toFixed(1) }} km</span>
-      <span v-else class="province-badge">📍 Por provincia</span>
+      <div class="header-right">
+        <button 
+          class="btn-favorite" 
+          :class="{ 'is-active': isFavorite }" 
+          @click.stop="emit('toggle-favorite', station.id)"
+          :aria-label="isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'"
+          :data-tooltip="isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" :fill="isFavorite ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="heart-icon"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+        </button>
+        <span v-if="distance !== null && distance !== undefined" class="distance-badge">{{ distance.toFixed(1) }} km</span>
+        <span v-else class="province-badge">📍 Por provincia</span>
+      </div>
     </div>
     <div class="location-details">
       <div v-if="station.isRestricted" class="restricted-warning">
@@ -68,7 +83,7 @@ const mapsUrl = computed(() => {
         class="price-box" 
         :class="{ clickable: activeFuel === 'distance' }"
         @click="activeFuel === 'distance' ? emit('calculate', station.price95) : null"
-        :title="activeFuel === 'distance' ? 'Calcular con este precio' : ''"
+        :data-tooltip="activeFuel === 'distance' ? 'Calcular con este precio' : ''"
       >
         <span class="fuel-type">Gasolina 95</span>
         <span class="price-value" :class="{ 
@@ -81,7 +96,7 @@ const mapsUrl = computed(() => {
         class="price-box" 
         :class="{ clickable: activeFuel === 'distance' }"
         @click="activeFuel === 'distance' ? emit('calculate', station.price98) : null"
-        :title="activeFuel === 'distance' ? 'Calcular con este precio' : ''"
+        :data-tooltip="activeFuel === 'distance' ? 'Calcular con este precio' : ''"
       >
         <span class="fuel-type">Gasolina 98</span>
         <span class="price-value" :class="{ 
@@ -94,7 +109,7 @@ const mapsUrl = computed(() => {
         class="price-box" 
         :class="{ clickable: activeFuel === 'distance' }"
         @click="activeFuel === 'distance' ? emit('calculate', station.priceDiesel) : null"
-        :title="activeFuel === 'distance' ? 'Calcular con este precio' : ''"
+        :data-tooltip="activeFuel === 'distance' ? 'Calcular con este precio' : ''"
       >
         <span class="fuel-type">Diésel</span>
         <span class="price-value" :class="{ 
@@ -192,6 +207,46 @@ const mapsUrl = computed(() => {
   font-weight: 700;
   color: var(--text-base);
   line-height: 1.2;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn-favorite {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border-radius: 50%;
+}
+
+.btn-favorite:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  transform: scale(1.2);
+}
+
+.btn-favorite.is-active {
+  color: #ef4444;
+  filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.4));
+}
+
+.btn-favorite.is-active .heart-icon {
+  animation: heart-beat 0.4s ease-out;
+}
+
+@keyframes heart-beat {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
 }
 
 .distance-badge {

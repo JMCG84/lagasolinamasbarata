@@ -85,3 +85,92 @@ a {
   color: var(--primary);
   text-decoration: none;
 }
+
+/* ── Modern Tooltips ── */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(5px);
+  background: var(--surface-bg);
+  color: var(--text-base);
+  padding: 0.5rem 0.8rem;
+  border-radius: 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+  pointer-events: none;
+  z-index: 1000;
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+/* Triangle */
+[data-tooltip]::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%) translateY(5px);
+  border-width: 5px 5px 0 5px;
+  border-style: solid;
+  border-color: var(--border-color) transparent transparent transparent;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 1000;
+}
+
+[data-tooltip]:hover::after,
+[data-tooltip]:hover::before {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Position adjustments for corners (Show BELOW icons since they are at the top) */
+.favorites-toggle[data-tooltip]::after,
+.favorites-toggle[data-tooltip]::before,
+.theme-toggle[data-tooltip]::after,
+.theme-toggle[data-tooltip]::before {
+  bottom: auto;
+  top: calc(100% + 10px);
+  transform: translateY(-5px);
+}
+
+.favorites-toggle[data-tooltip]::before,
+.theme-toggle[data-tooltip]::before {
+  top: calc(100% + 5px);
+  border-width: 0 5px 5px 5px;
+  border-color: transparent transparent var(--border-color) transparent;
+}
+
+.favorites-toggle[data-tooltip]::after,
+.favorites-toggle[data-tooltip]::before {
+  left: 0;
+  transform: translateX(0) translateY(-5px);
+}
+
+.theme-toggle[data-tooltip]::after,
+.theme-toggle[data-tooltip]::before {
+  left: auto;
+  right: 0;
+  transform: translateX(0) translateY(-5px);
+}
+
+.favorites-toggle[data-tooltip]:hover::after,
+.favorites-toggle[data-tooltip]:hover::before,
+.theme-toggle[data-tooltip]:hover::after,
+.theme-toggle[data-tooltip]:hover::before {
+  transform: translateX(0) translateY(0);
+}

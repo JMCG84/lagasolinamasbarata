@@ -72,6 +72,8 @@ const userLoc = ref(null);
 const isDarkMode = ref(true);
 const provinceStats = ref(null);
 const lastUpdated = ref(null);
+const favorites = ref(JSON.parse(localStorage.getItem("favorites") || "[]"));
+const showOnlyFavorites = ref(false);
 
 // Modal state
 const showLocationModal = ref(false);
@@ -126,6 +128,21 @@ const toggleTheme = () => {
     document.documentElement.classList.add("light-mode");
     localStorage.setItem("theme", "light");
   }
+};
+
+const toggleFavorite = (id) => {
+  const index = favorites.value.indexOf(id);
+  if (index === -1) {
+    favorites.value.push(id);
+  } else {
+    favorites.value.splice(index, 1);
+  }
+  localStorage.setItem("favorites", JSON.stringify(favorites.value));
+};
+
+const toggleOnlyFavorites = () => {
+  showOnlyFavorites.value = !showOnlyFavorites.value;
+  filterAndSort();
 };
 
 const locateAndFetch = () => {
@@ -189,6 +206,11 @@ const filterAndSort = () => {
   });
 
   let filtered = filters.filter((s) => s.distance <= searchDistance.value);
+
+  // Filter by favorites if active
+  if (showOnlyFavorites.value) {
+    filtered = filtered.filter((s) => favorites.value.includes(s.id));
+  }
 
   if (filtered.length > 0) {
     const currentProvince = filtered[0].province;
@@ -268,7 +290,16 @@ const searchByProvince = async () => {
         return priceA - priceB;
       });
 
-    processedStations.value = filtered.slice(0, 5);
+    processedStations.value = filtered;
+
+    // Filter by favorites if active
+    if (showOnlyFavorites.value) {
+      processedStations.value = processedStations.value.filter((s) => 
+        favorites.value.includes(s.id)
+      );
+    }
+
+    processedStations.value = processedStations.value.slice(0, 50);
 
     // Stats de provincia
     let minPrice = Infinity;
@@ -302,7 +333,35 @@ const searchByProvince = async () => {
 
 <template>
   <div class="home-view">
-    <button @click="toggleTheme" class="theme-toggle" aria-label="Cambiar tema">
+    <button
+      @click="toggleOnlyFavorites"
+      class="favorites-toggle"
+      :class="{ 'is-active': showOnlyFavorites }"
+      :data-tooltip="showOnlyFavorites ? 'Ver todas las estaciones' : 'Filtrar por favoritas'"
+      aria-label="Ver favoritos">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        :fill="showOnlyFavorites ? 'currentColor' : 'none'"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="icon">
+        <path
+          d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+      </svg>
+      <span v-if="favorites.length > 0" class="fav-count">{{
+        favorites.length
+      }}</span>
+    </button>
+    <button 
+      @click="toggleTheme" 
+      class="theme-toggle" 
+      :data-tooltip="isDarkMode ? 'Modo claro' : 'Modo oscuro'"
+      aria-label="Cambiar tema">
       <svg
         v-if="isDarkMode"
         xmlns="http://www.w3.org/2000/svg"
@@ -369,7 +428,7 @@ const searchByProvince = async () => {
               </template>
             </button>
 
-            <div class="control-select-wrapper" title="Filtrar por distancia">
+            <div class="control-select-wrapper" data-tooltip="Filtrar por distancia">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -395,7 +454,7 @@ const searchByProvince = async () => {
 
             <div
               class="control-select-wrapper"
-              title="Ordenar por combustible o cercanía">
+              data-tooltip="Ordenar por combustible o cercanía">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -425,7 +484,7 @@ const searchByProvince = async () => {
             <button
               @click="openCalculator()"
               class="control-btn btn-util"
-              title="Calcular consumo">
+              data-tooltip="Calcular consumo">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -451,7 +510,7 @@ const searchByProvince = async () => {
             <button
               @click="showPromotions = true"
               class="control-btn btn-util"
-              title="Promociones y ofertas">
+              data-tooltip="Promociones y ofertas">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -519,6 +578,29 @@ const searchByProvince = async () => {
         <p>No se encontraron gasolineras a menos de {{ searchDistance }}km.</p>
       </div>
 
+      <div
+        v-if="!loading && processedStations.length === 0 && showOnlyFavorites"
+        class="empty-state">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="64"
+          height="64"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#ef4444"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="icon">
+          <path
+            d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+        </svg>
+        <p>Aún no tienes gasolineras favoritas guardadas.</p>
+        <button @click="showOnlyFavorites = false; filterAndSort()" class="btn-text">
+          Ver todas las gasolineras
+        </button>
+      </div>
+
       <div class="stations-grid">
         <GasStationCard
           v-for="station in processedStations"
@@ -527,7 +609,9 @@ const searchByProvince = async () => {
           :distance="station.distance"
           :activeFuel="fuelType"
           :provinceStats="provinceStats"
-          @calculate="openCalculator" />
+          :isFavorite="favorites.includes(station.id)"
+          @calculate="openCalculator"
+          @toggle-favorite="toggleFavorite" />
       </div>
 
       <GasCalculator
@@ -666,6 +750,66 @@ html.light-mode .icon-star {
   transform: scale(1.1) rotate(5deg);
   border-color: var(--primary);
   color: var(--primary-light);
+}
+
+.favorites-toggle {
+  position: absolute;
+  top: 1rem;
+  left: 1.5rem;
+  z-index: 50;
+  background: var(--surface-bg);
+  color: var(--text-base);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.favorites-toggle:hover {
+  transform: scale(1.1) rotate(-5deg);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.favorites-toggle.is-active {
+  background: #ef4444;
+  color: white;
+  border-color: #ef4444;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+}
+
+.fav-count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #dc2626;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 800;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--surface-bg);
+}
+
+.btn-text {
+  background: none;
+  border: none;
+  color: var(--primary-light);
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  text-decoration: underline;
+  font-size: 0.9rem;
 }
 
 .hero {
