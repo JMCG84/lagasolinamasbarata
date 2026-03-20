@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue';
 import GasStationCard from '../components/GasStationCard.vue';
 import GasCalculator from '../components/GasCalculator.vue';
+import PromotionsModal from '../components/PromotionsModal.vue';
 import { fetchGasStations } from '../services/gasAPI';
 import { calculateDistance } from '../utils/distance';
 
@@ -49,6 +50,7 @@ const modalFuelType = ref('price95');
 
 // Calculator state
 const showCalculator = ref(false);
+const showPromotions = ref(false);
 const calcInitialPrice = ref(0);
 
 const openCalculator = (price = 0) => {
@@ -267,31 +269,40 @@ const searchByProvince = async () => {
         <h1>La Gasolinera Más Barata</h1>
         <p>Ahorra cada vez que llenes el tanque. Encuentra las mejores opciones cerca de ti.</p>
         
-        <div class="controls">
-          <button @click="locateAndFetch" class="btn-primary" :disabled="loading">
-            <span v-if="loading" class="spinner"></span>
-            <span v-else>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-            </span>
-            {{ loading ? 'Buscando cerca de ti...' : `Buscar (${searchDistance}km)` }}
-          </button>
-          
-          <select v-model="searchDistance" class="fuel-select" @change="sortStations">
-            <option :value="20">Radio: 20 km</option>
-            <option :value="50">Radio: 50 km</option>
-          </select>
+        <div class="controls-wrapper">
+          <div class="main-controls">
+            <button @click="locateAndFetch" class="btn-primary" :disabled="loading">
+              <span v-if="loading" class="spinner"></span>
+              <span v-else>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              </span>
+              {{ loading ? 'Buscando...' : `Buscar` }}
+            </button>
+            
+            <select v-model="searchDistance" class="fuel-select" @change="sortStations">
+              <option :value="20">Radio: 20 km</option>
+              <option :value="50">Radio: 50 km</option>
+            </select>
 
-          <select v-model="fuelType" class="fuel-select" @change="sortStations">
-            <option value="price95">Orden: Gasolina 95 más barata</option>
-            <option value="price98">Orden: Gasolina 98 más barata</option>
-            <option value="priceDiesel">Orden: Diésel más barato</option>
-            <option value="distance">Orden: Más cercanas primero</option>
-          </select>
+            <select v-model="fuelType" class="fuel-select" @change="sortStations">
+              <option value="price95">Orden: Gasolina 95 más barata</option>
+              <option value="price98">Orden: Gasolina 98 más barata</option>
+              <option value="priceDiesel">Orden: Diésel más barato</option>
+              <option value="distance">Orden: Más cercanas primero</option>
+            </select>
+          </div>
 
-          <button @click="openCalculator()" class="btn-secondary" title="Calculadora de repostaje">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><path d="M8 14h2"/><path d="M14 14h2"/><path d="M8 18h2"/><path d="M14 18h2"/></svg>
-            <span>Calculadora</span>
-          </button>
+          <div class="secondary-controls">
+            <button @click="openCalculator()" class="btn-secondary" title="Calculadora de consumo y precio">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><path d="M8 14h2"/><path d="M14 14h2"/><path d="M8 18h2"/><path d="M14 18h2"/></svg>
+              <span>Calculadora de Consumo</span>
+            </button>
+
+            <button @click="showPromotions = true" class="btn-secondary" title="Ver promociones y ofertas actuales">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <span>Promociones y Ofertas</span>
+            </button>
+          </div>
         </div>
       </div>
     </header>
@@ -338,6 +349,11 @@ const searchByProvince = async () => {
         :show="showCalculator" 
         :initial-price="calcInitialPrice"
         @close="showCalculator = false"
+      />
+
+      <PromotionsModal 
+        :show="showPromotions"
+        @close="showPromotions = false"
       />
 
       <div v-if="lastUpdatedFormatted" class="update-note">
@@ -468,22 +484,36 @@ h1 {
   margin-right: auto;
 }
 
-.controls {
+.controls-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.main-controls {
   display: flex;
   justify-content: center;
   gap: 1rem;
   flex-wrap: wrap;
 }
 
+.secondary-controls {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+}
+
 .fuel-select {
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 1.25rem;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
   background-color: var(--surface-bg);
   color: var(--text-base);
   font-family: inherit;
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
   box-shadow: var(--shadow-sm);
   transition: all 0.2s;
@@ -532,14 +562,15 @@ h1 {
   gap: 0.5rem;
   background: var(--surface-bg);
   color: var(--text-base);
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 1.25rem;
   border-radius: var(--radius-lg);
-  font-weight: 600;
-  font-size: 1rem;
+  font-weight: 700;
+  font-size: 0.95rem;
   cursor: pointer;
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
   transition: all 0.2s;
+  flex: 0 1 200px;
 }
 
 .btn-secondary:hover {
@@ -701,11 +732,13 @@ h1 {
 }
 
 @media (max-width: 640px) {
-  .controls {
+  .main-controls, .secondary-controls {
     flex-direction: column;
-  }
-  .fuel-select, .btn-primary {
     width: 100%;
+  }
+  .fuel-select, .btn-primary, .btn-secondary {
+    width: 100%;
+    flex: none;
   }
   .stations-grid {
     grid-template-columns: 1fr;
