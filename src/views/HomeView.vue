@@ -756,6 +756,10 @@ html.light-mode .icon-star {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 .theme-toggle {
@@ -849,10 +853,11 @@ html.light-mode .icon-star {
   border-bottom: 1px solid var(--border-color);
   text-align: center;
   overflow: hidden;
+  width: 100% !important;
   background-image: url("../assets/hero-bg.png");
   background-size: cover;
   background-position: center;
-  background-attachment: fixed;
+  background-attachment: scroll; /* Changed from fixed to scroll for mobile/tablet */
 }
 
 .hero::before {
@@ -876,12 +881,13 @@ html.light-mode .icon-star {
 }
 
 h1 {
-  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-size: clamp(2rem, 5vw, 4rem); /* Reduced min-size from 2.5rem to 2rem */
   font-weight: 800;
   letter-spacing: -0.025em;
   margin-bottom: 1rem;
   color: #ffffff;
   text-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
+  word-break: break-word; /* Ensure wrapping on very narrow devices */
 }
 
 .hero p {
@@ -909,6 +915,7 @@ h1 {
   box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4);
   gap: 0.5rem;
   width: 100%;
+  max-width: 100%; /* Ensure it does not overflow its parent */
   margin: 0 auto;
 }
 
@@ -929,7 +936,8 @@ h1 {
   font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.2s;
-  white-space: nowrap;
+  white-space: normal; /* Allow text wrapping on very narrow screens */
+  text-align: center;
 }
 
 .btn-lookup {
@@ -1020,7 +1028,7 @@ h1 {
 .stations-grid,
 .loading-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 2rem;
 }
 
@@ -1171,7 +1179,7 @@ h1 {
 @media (max-width: 640px) {
   .controls-toolbar {
     flex-direction: column;
-    padding: 1rem;
+    padding: 0.75rem; /* Reduced from 1rem to gain horizontal space */
     gap: 0.75rem;
   }
   .control-btn,
@@ -1191,6 +1199,24 @@ h1 {
     height: 1px;
     width: 100%;
     margin: 0.5rem 0;
+  }
+}
+
+@media (max-width: 400px) {
+  .hero {
+    padding: 4rem 1rem;
+  }
+  .favorites-toggle,
+  .theme-toggle {
+    width: 38px;
+    height: 38px;
+    top: 0.75rem;
+  }
+  .favorites-toggle { left: 1rem; }
+  .theme-toggle { right: 1rem; }
+  
+  .container {
+    padding: 2rem 0.75rem;
   }
 }
 

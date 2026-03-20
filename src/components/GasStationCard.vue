@@ -153,7 +153,9 @@ const mapsUrl = computed(() => {
   border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  height: 100%;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0; /* Allow the flex item to shrink below content size */
   animation: fadeIn 0.5s ease-out;
 }
 
@@ -168,7 +170,8 @@ const mapsUrl = computed(() => {
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 0.75rem;
-  gap: 1rem;
+  flex-wrap: wrap; /* Allow wrapping if name is too long on small screens */
+  gap: 0.75rem;
 }
 
 .title-wrapper {
@@ -207,12 +210,14 @@ const mapsUrl = computed(() => {
   font-weight: 700;
   color: var(--text-base);
   line-height: 1.2;
+  word-break: break-word; /* Prevent name from pushing out the card */
+  hyphens: auto;
 }
 
 .header-right {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
+  flex-wrap: wrap; /* Allow heart icon and distance badge to wrap if needed */
+  justify-content: flex-end;
 }
 
 .btn-favorite {
@@ -305,10 +310,14 @@ const mapsUrl = computed(() => {
 .address {
   margin: 0 0 0.25rem 0;
   font-weight: 500;
+  overflow-wrap: anywhere; /* Crucial for long road names with dots/dashes */
+  word-break: break-word;
 }
 
 .municipality {
   margin: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .prices-container {
@@ -320,8 +329,10 @@ const mapsUrl = computed(() => {
 }
 
 .price-box {
-  flex: 1;
-  min-width: 100px;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 80px; /* Allow items to shrink to 80px before wrapping */
+  min-width: 0; /* Let flex-basis handle the min size */
   background: var(--surface-bg);
   padding: 0.75rem;
   border-radius: var(--radius-md);
@@ -461,5 +472,24 @@ const mapsUrl = computed(() => {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 360px) {
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .header-right {
+    width: 100%;
+    justify-content: flex-start;
+    margin-top: 0.25rem;
+  }
+  .gas-card {
+    padding: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Reduced shadow spread for mobile */
+  }
+  .price-value {
+    font-size: 1.1rem;
+  }
 }
 </style>

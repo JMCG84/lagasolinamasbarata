@@ -51,24 +51,30 @@
 }
 
 *, *::before, *::after {
-  box-sizing: border-box;
+  box-sizing: border-box !important;
 }
 
 html, body {
   margin: 0;
   padding: 0;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100vw !important;
+  overflow-x: hidden !important;
+  position: relative;
   font-family: 'Outfit', system-ui, -apple-system, sans-serif;
   background-color: var(--bg-color);
   background: var(--bg-gradient);
-  background-attachment: fixed;
+  background-attachment: scroll;
   color: var(--text-base);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 #app {
-  display: flex;
-  flex-direction: column;
+  display: block; /* Switched from flex to block to prevent shrinking in Safari */
+  width: 100% !important;
+  min-width: 100% !important;
   min-height: 100vh;
 }
 
