@@ -1,30 +1,160 @@
-# La Gasolinera Mas Barata
+# La Gasolinera Más Barata
 
-## Descripcion del Proyecto
-"La Gasolinera Mas Barata" es una Single Page Application (SPA) desarrollada con Vue 3 y Vite. El objetivo principal de la aplicacion es asistir a los usuarios en la busqueda de las estaciones de servicio mas economicas dentro de un radio de 20 kilometros desde su ubicacion actual, promoviendo asi el ahorro de modo intuitivo.
+[![Live Demo](https://img.shields.io/badge/demo-live-success?style=for-the-badge)](https://lagasolinamasbarata.vercel.app)
+[![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
+[![Vue 3](https://img.shields.io/badge/Vue-3.5-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white)](https://vuejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-Este proyecto ha sido elaborado por Jose Manuel Campos con la ayuda de Inteligencia Artificial (IA), poniendo en practica los conocimientos y habilidades aprendidos en cursos avanzados de desarrollo de software con IA.
+> Encuentra las gasolineras más baratas cerca de ti en tiempo real con datos oficiales del Ministerio de Industria de España.
 
-## Flujo de la Aplicacion
-El funcionamiento interno de la aplicacion consta de las siguientes etapas principales:
+![Preview](https://via.placeholder.com/800x400/667eea/ffffff?text=Screenshot+del+proyecto)
 
-1. Geolocalizacion: Al entrar en la plataforma, el sistema solicita acceso a las coordenadas GPS del navegador del usuario.
-2. Sincronizacion de Precios: Se ejecuta una consulta asincrona hacia la API REST oficial en tiempo real del Ministerio para la Transicion Ecologica. Esta peticion esta protegida por un sistema de proxy proxy-fallback para eludir potenciales problemas de CORS.
-3. Calculo Vectorial: Mediante algoritmos matematicos en su aplicacion cliente, especificamente a traves de la Formula de Haversine, la aplicacion procesa un gran volumen de datos y descarta aquellas gasolineras ubicadas a mas de 20 kilometros en base a la distancia esferica de la tierra.
-4. Identidad Visual: Un utilitario se encarga de procesar las cadenas de texto correspondientes al nombre de cada estacion para asignar y pintar vectores graficos (SVG) que representan el logotipo de la marca correspondiente (ej. Repsol, BP, Cepsa).
-5. Interaccion de Usuario: Los usuarios interactuan con una **barra de controles unificada** de alta usabilidad que permite el filtrado instantaneo por radio (20km/50km), tipo de carburante y cercania.
-6. Herramientas de Ahorro: Incluye una **calculadora de consumo** en tiempo real y un panel de **promociones y ofertas** vigentes de las principales redes de estaciones (Repsol, Cepsa, etc.).
+## Características
 
-## Despliegue
-Al tratarse de un cliente ligero que externaliza sus llamadas al servidor ministerial, la aplicacion utiliza el patron estatico proporcionado por el compilador 'Vite'.
+- **Geolocalización automática** - Detecta tu ubicación y busca gasolineras en un radio de 20 km
+- **Precios en tiempo real** - Datos actualizados del Ministerio de Industria
+- **Rendimiento optimizado** - Cálculo eficiente de distancias usando fórmula de Haversine
+- **Responsive design** - Funciona perfectamente en móvil, tablet y desktop
+- **Sin anuncios ni tracking** - 100% gratis y respetuoso con tu privacidad
 
-El flujo de integracion y despliegue continuo (CI/CD) ha sido configurado en la plataforma en la nube Vercel. 
-Por medio de esta prestacion, cada nuevo fragmento de codigo subido (push) a la rama 'main' del repositorio de GitHub desencadena una construccion automatica que actualiza inmediatamente la version alojada para produccion.
+## Stack Tecnológico
 
-## Tecnologias Utilizadas
-- Vue 3
-- Vite
-- Routing Inteligente
-- Vanilla CSS enfocado a estandar moderno (Dark Mode y Glassmorphism)
-- **Personalizacion Tematica**: Iconografía dinamica con colores diferenciados en Modo Claro (Surtidor Rojo, Calculadora Gris, Estrella Amarilla).
-- Fetch API y Geolocalizacion HTML5
+- **Frontend**: Vue 3 (Composition API)
+- **Lenguaje**: TypeScript / JavaScript ES6+
+- **Estilos**: CSS3 con variables custom
+- **Build Tool**: Vite 7
+- **Routing**: Vue Router 4
+- **Deploy**: Vercel
+- **Analytics**: Vercel Analytics
+
+## Demo
+
+[Ver aplicación en vivo](https://lagasolinamasbarata.vercel.app)\*\*
+
+## Instalación Local
+
+### Prerrequisitos
+
+- Node.js >= 18.0.0
+- npm o yarn
+
+### Pasos
+
+1. **Clona el repositorio**
+
+   ```bash
+   git clone https://github.com/JMCG84/lagasolinamasbarata.git
+   cd lagasolinamasbarata
+   ```
+
+2. **Instala las dependencias**
+
+   ```bash
+   npm install
+   ```
+
+3. **Inicia el servidor de desarrollo**
+
+   ```bash
+   npm run dev
+   ```
+
+4. **Abre tu navegador**
+
+   Visita `http://localhost:5173`
+
+## Build para Producción
+
+```bash
+npm run build
+npm run preview  # Para previsualizar la build
+```
+
+Los archivos optimizados se generarán en la carpeta `dist/`.
+
+## Estructura del Proyecto
+
+```
+lagasolinamasbarata/
+├── public/
+│   ├── gas-icon.svg
+│   ├── og-image.png
+│   ├── robots.txt
+│   └── sitemap.xml
+├── src/
+│   ├── assets/
+│   ├── components/
+│   ├── router/
+│   ├── views/
+│   ├── App.vue
+│   └── main.js
+├── index.html
+├── package.json
+├── vite.config.js
+└── README.md
+```
+
+## Casos de Uso
+
+- **Conductores diarios**: Ahorra dinero encontrando las gasolineras más económicas
+- **Empresas de transporte**: Optimiza rutas para reducir costes de combustible
+- **Viajeros**: Planifica paradas estratégicas en carretera
+
+## ¿Cómo funciona?
+
+1. La aplicación solicita permisos de geolocalización al usuario
+2. Consume la API pública del [Ministerio de Industria](https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/)
+3. Calcula distancias usando la fórmula de Haversine
+4. Filtra y ordena gasolineras por precio (Gasolina 95 y Gasóleo A)
+5. Muestra resultados con precio, dirección y distancia
+
+## Características Técnicas
+
+### Optimizaciones de Rendimiento
+
+- Cálculo de distancias en cliente (sin llamadas innecesarias a APIs)
+- Caché de resultados de geolocalización
+- Lazy loading de componentes
+
+### SEO
+
+- Meta tags optimizadas para redes sociales (Open Graph)
+- Sitemap.xml generado
+- Structured data (JSON-LD)
+- Robots.txt configurado
+
+## Contribuciones
+
+Las contribuciones son bienvenidas! Si tienes ideas para mejorar el proyecto:
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'feat: add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
+
+## Autor
+
+**José Manuel Campos**
+
+- Portfolio: [jcampos-dev.vercel.app](https://jcampos-dev.vercel.app)
+- LinkedIn: [José Manuel Campos](https://www.linkedin.com/in/tu-perfil)
+- GitHub: [@JMCG84](https://github.com/JMCG84)
+
+## Agradecimientos
+
+- Datos proporcionados por el [Ministerio de Industria, Comercio y Turismo](https://www.mincotur.gob.es/)
+- Iconos de [Lucide Icons](https://lucide.dev/)
+- Hosting por [Vercel](https://vercel.com)
+
+---
+
+**Si este proyecto te resultó útil, considera darle una estrella en GitHub!**
+
+---
+
+**Desarrollado en Sevilla, España**
