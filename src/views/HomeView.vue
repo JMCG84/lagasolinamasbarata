@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import GasStationCard from '../components/GasStationCard.vue';
+import GasCalculator from '../components/GasCalculator.vue';
 import { fetchGasStations } from '../services/gasAPI';
 import { calculateDistance } from '../utils/distance';
 
@@ -45,6 +46,15 @@ const showLocationModal = ref(false);
 const modalCA = ref('');
 const modalProvince = ref('');
 const modalFuelType = ref('price95');
+
+// Calculator state
+const showCalculator = ref(false);
+const calcInitialPrice = ref(0);
+
+const openCalculator = (price = 0) => {
+  calcInitialPrice.value = typeof price === 'number' ? price : 0;
+  showCalculator.value = true;
+};
 
 // ── Computed ──
 const lastUpdatedFormatted = computed(() => {
@@ -277,6 +287,11 @@ const searchByProvince = async () => {
             <option value="priceDiesel">Orden: Diésel más barato</option>
             <option value="distance">Orden: Más cercanas primero</option>
           </select>
+
+          <button @click="openCalculator()" class="btn-secondary" title="Calculadora de repostaje">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><path d="M8 14h2"/><path d="M14 14h2"/><path d="M8 18h2"/><path d="M14 18h2"/></svg>
+            <span>Calculadora</span>
+          </button>
         </div>
       </div>
     </header>
@@ -315,8 +330,15 @@ const searchByProvince = async () => {
           :distance="station.distance"
           :activeFuel="fuelType"
           :provinceStats="provinceStats"
+          @calculate="openCalculator"
         />
       </div>
+
+      <GasCalculator 
+        :show="showCalculator" 
+        :initial-price="calcInitialPrice"
+        @close="showCalculator = false"
+      />
 
       <div v-if="lastUpdatedFormatted" class="update-note">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><polyline points="12 6 12 12 16 14"></polyline></svg>
@@ -501,6 +523,30 @@ h1 {
   opacity: 0.7;
   cursor: not-allowed;
   transform: none;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--surface-bg);
+  color: var(--text-base);
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-lg);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background: var(--bg-color);
+  border-color: var(--primary-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .spinner {
