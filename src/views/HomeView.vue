@@ -421,7 +421,7 @@ const searchByProvince = async () => {
       <div class="hero-content">
         <h1>La Gasolinera Más Barata</h1>
         <p>
-          Ahorra cada vez que llenes el tanque. Encuentra las mejores opciones
+          Ahorra cada vez que llenes el depósito. Encuentra las mejores opciones
           cerca de ti.
         </p>
 
