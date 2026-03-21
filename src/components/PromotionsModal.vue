@@ -8,7 +8,14 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
+const showDisclaimer = ref(true);
 const failedLogos = ref(new Set());
+
+// Reset disclaimer when modal opens
+import { watch } from 'vue';
+watch(() => props.show, (newVal) => {
+  if (newVal) showDisclaimer.value = true;
+});
 
 const handleImageError = (name, idx = null) => {
   const key = idx !== null ? `${name}-${idx}` : name;
@@ -22,48 +29,48 @@ const isLogoFailed = (name, idx = null) => {
 
 const promotions = [
   {
+    name: 'Moeve (antigua Cepsa) - ¡Oferta Líder!',
+    logo: getStationLogo('cepsa'),
+    color: '#ed1c24',
+    text: "Moeve rompe el mercado con su plan combinado con Naturgy. El ahorro base es de 12 cts/litro con la app Moeve gow. Sin embargo, si eres cliente de Naturgy (Luz/Gas), el descuento sube a 32 cts/litro. Para clientes con soluciones completas (mantenimiento y placas solares), el ahorro alcanza el máximo histórico de 67 cts/litro. El descuento se gestiona a través de la app gow y se aplica al pagar."
+  },
+  {
     name: 'Repsol (Waylet)',
     logo: getStationLogo('repsol'),
     color: '#0055a5',
-    text: "Descuento directo al pagar con la app Waylet. El ahorro base es de 10 cts/litro, pero puede ascender hasta 40 cts/litro si tienes contratados otros servicios de Repsol (Luz, Gas o Solar). El descuento se aplica sobre el precio del surtidor y aparece desglosado en el ticket de compra. No acumulable a otras tarjetas de descuento."
-  },
-  {
-    name: 'Cepsa / Moeve (GOW)',
-    logo: getStationLogo('cepsa'),
-    color: '#ed1c24',
-    text: "Promoción exclusiva para miembros del programa de fidelización GOW. El ahorro se obtiene en forma de saldo acumulable (normalmente entre 10 y 15 cts/litro) que podrás canjear en próximos repostajes o en establecimientos colaboradores. Imprescindible identificarse con el código QR de la app al pagar."
+    text: "Repsol mantiene su descuento de hasta 40 cts/litro para usuarios que tengan contratados sus servicios de Luz, Gas y Energía Solar. El ahorro mínimo garantizado por usar la app Waylet es de 10 cts/litro en todos los carburantes. El descuento es directo y aparece reflejado en el ticket tras el pago móvil."
   },
   {
     name: 'BP (Mi BP)',
     logo: getStationLogo('bp'),
     color: '#00833d',
-    text: "Ahorro mediante el sistema de puntos 'Mi BP'. El descuento de 10 cts/litro suele aplicarse como saldo para el siguiente repostaje en estaciones de la red BP. Si utilizas la tarjeta de crédito Visa Mi BP, el descuento se devuelve directamente en tu extracto bancario mensual (3% o 6% según modalidad)."
+    text: "BP refuerza su programa con ahorros de hasta 15 cts/litro acumulables en la tarjeta Mi BP. Además, se mantiene la promoción de ahorro extra en estaciones seleccionadas y la bonificación mediante la tarjeta Visa Mi BP, que puede devolver hasta un 6% adicional en tu extracto bancario."
   },
   {
     name: 'Shell / DISA (Topii / ING)',
     logo: getStationLogo('shell'),
     color: '#fbce07',
-    text: "Descuento del 4% directo si pagas a través de la aplicación Topii o si eres cliente de ING y utilizas su tarjeta de débito/crédito. El abono de ING suele aparecer en tu cuenta bancaria unos días después del repostaje, mientras que en Topii el descuento es inmediato sobre el total a pagar."
+    text: "Se mantiene el descuento del 4% directo pagando con la app Topii. Para clientes de ING, el descuento del 4% se aplica mediante devolución directa en la cuenta bancaria vinculada tras el repostaje. Es compatible con el precio de surtidor que ya incluye la rebaja del IVA al 10%."
   },
   {
     name: 'Galp (Mundo Galp)',
     logo: getStationLogo('galp'),
     color: '#ff6600',
-    text: "Descuento de 5 cts/litro en combustibles estándar y 10 cts/litro en gama G-Force usando el código QR de la app Mundo Galp. Si además eres cliente de Abanca y pagas con su tarjeta, recibirás una bonificación adicional del 2% al 5% en tu cuenta bancaria."
+    text: "Ahorro de 5 cts/litro en combustibles estándar y 10 cts/litro en gama G-Force usando la app Mundo Galp. Si pagas con tarjetas de Abanca, sumas una bonificación adicional de entre el 2% y el 5% según el tipo de cuenta, que recibirás directamente en tu extracto mensual."
   },
   {
     name: 'Supermercados (Carrefour / Alcampo / Eroski)',
     logo: getStationLogo('carrefour'),
     multiple: ['carrefour', 'alcampo', 'eroski'],
     color: '#0038a8',
-    text: "Estas estaciones ofrecen el ahorro vinculado a sus tarjetas de socio. En Carrefour, el 8% del importe se acumula en tu ChequeAhorro trimestral. En Alcampo y Eroski, el descuento suele ser directo en el precio por litro al pasar la tarjeta de fidelidad antes de repostar."
+    text: "Carrefour ha subido su bonificación al 10% del importe (antes 8%) acumulable en el ChequeAhorro por la crisis de precios. En Alcampo y Eroski, los descuentos suelen ser de unos 3 a 5 cts/litro directos al pasar la tarjeta de fidelidad del supermercado antes de realizar el pago."
   },
   {
     name: 'Low Cost (Ballenoil / Petroprix)',
     logo: getStationLogo('ballenoil'),
     multiple: ['ballenoil', 'petroprix'],
     color: '#94a3b8',
-    text: "Gasolineras automáticas con el precio base más competitivo de la zona. Sus promociones suelen basarse en cupones de lavado gratuitos o sorteos de combustible acumulado. Consulta en su app ('Easy Fuel' para Ballenoil) posibles promociones de bienvenida por el primer uso."
+    text: "Mantienen los precios base más bajos de la API oficial. Sus promociones actuales se centran en la app Easy Fuel (Ballenoil) con sorteos de combustible y cupones de lavado. No requieren contratos de luz o gas para acceder a su precio reducido."
   }
 ];
 
@@ -91,55 +98,82 @@ const getMultipleLogos = (names) => {
         </div>
 
         <div class="modal-body">
-          <!-- IVA Announcement -->
-          <div class="iva-banner">
-            <div class="iva-icon">📢</div>
-            <div class="iva-content">
-              <h3>Actualización Gubernamental (20/03/2026)</h3>
-              <p>El gobierno ha rebajado oficialmente el <strong>IVA al 10%</strong> en combustibles para paliar los costes energéticos. Los precios mostrados ya están actualizados. Avisaremos cuando esta medida deje de estar vigente.</p>
+          <!-- DISCLAIMER VIEW -->
+          <Transition name="fade-slide" mode="out-in">
+            <div v-if="showDisclaimer" class="disclaimer-view">
+              <div class="disclaimer-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shield-pulse"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <h3 class="disclaimer-title">Aviso Legal y de Responsabilidad</h3>
+              <p class="disclaimer-text">
+                Los descuentos mostrados son <strong>estimaciones basadas en las promociones públicas</strong> de cada compañía al 21 de marzo de 2026. 
+              </p>
+              <p class="disclaimer-text">
+                Los ahorros máximos publicitados (como los 67 cts de Moeve o los 40 cts de Repsol) están sujetos a requisitos específicos, como la <strong>contratación obligatoria de servicios de Luz o Gas</strong> con dichas operadoras. 
+              </p>
+              <p class="disclaimer-text">
+                Los precios oficiales servidos por la API del Ministerio ya <strong>incluyen de serie la rebaja del IVA al 10%</strong> actualmente vigente.
+              </p>
+              
+              <button @click="showDisclaimer = false" class="accept-btn">
+                Aceptar y Ver Ofertas
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>
+              </button>
             </div>
-          </div>
 
-          <div class="promo-list">
-            <div v-for="promo in promotions" :key="promo.name" class="promo-item">
-              <div class="promo-header">
-                <div class="promo-logos">
-                  <template v-if="promo.multiple">
-                    <div v-for="(brand, idx) in getMultipleLogos(promo.multiple)" :key="idx" class="logo-container">
-                      <img 
-                        v-if="brand.url && !isLogoFailed(promo.name, idx)" 
-                        :src="brand.url" 
-                        :alt="brand.name" 
-                        class="brand-logo" 
-                        @error="handleImageError(promo.name, idx)"
-                      />
-                      <div v-else class="fallback-logo" :title="brand.name">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22V8c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2v14"/><path d="M15 6h2c1.1 0 2 .9 2 2v3s0 2 2 2"/><circle cx="10" cy="11" r="2"/><path d="M7 15h6"/></svg>
+            <!-- PROMOTIONS CONTENT -->
+            <div v-else class="promotions-content">
+              <!-- IVA Announcement -->
+              <div class="iva-banner">
+                <div class="iva-icon">📢</div>
+                <div class="iva-content">
+                  <h3>Actualización Gubernamental (21/03/2026)</h3>
+                  <p>El gobierno ha rebajado oficialmente el <strong>IVA al 10%</strong> en combustibles para paliar los costes energéticos. Los precios mostrados ya están actualizados.</p>
+                </div>
+              </div>
+
+              <div class="promo-list">
+                <div v-for="promo in promotions" :key="promo.name" class="promo-item">
+                  <div class="promo-header">
+                    <div class="promo-logos">
+                      <template v-if="promo.multiple">
+                        <div v-for="(brand, idx) in getMultipleLogos(promo.multiple)" :key="idx" class="logo-container">
+                          <img 
+                            v-if="brand.url && !isLogoFailed(promo.name, idx)" 
+                            :src="brand.url" 
+                            :alt="brand.name" 
+                            class="brand-logo" 
+                            @error="handleImageError(promo.name, idx)"
+                          />
+                          <div v-else class="fallback-logo" :title="brand.name">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22V8c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2v14"/><path d="M15 6h2c1.1 0 2 .9 2 2v3s0 2 2 2"/><circle cx="10" cy="11" r="2"/><path d="M7 15h6"/></svg>
+                          </div>
+                        </div>
+                      </template>
+                      <div v-else class="logo-container">
+                        <img 
+                          v-if="promo.logo && !isLogoFailed(promo.name)" 
+                          :src="promo.logo" 
+                          :alt="promo.name" 
+                          class="brand-logo" 
+                          @error="handleImageError(promo.name)"
+                        />
+                        <div v-else class="fallback-logo">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22V8c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2v14"/><path d="M15 6h2c1.1 0 2 .9 2 2v3s0 2 2 2"/><circle cx="10" cy="11" r="2"/><path d="M7 15h6"/></svg>
+                        </div>
                       </div>
                     </div>
-                  </template>
-                  <div v-else class="logo-container">
-                    <img 
-                      v-if="promo.logo && !isLogoFailed(promo.name)" 
-                      :src="promo.logo" 
-                      :alt="promo.name" 
-                      class="brand-logo" 
-                      @error="handleImageError(promo.name)"
-                    />
-                    <div v-else class="fallback-logo">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22V8c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2v14"/><path d="M15 6h2c1.1 0 2 .9 2 2v3s0 2 2 2"/><circle cx="10" cy="11" r="2"/><path d="M7 15h6"/></svg>
-                    </div>
+                    <h3 class="brand-name">{{ promo.name }}</h3>
                   </div>
+                  <p class="promo-text">{{ promo.text }}</p>
                 </div>
-                <h3 class="brand-name">{{ promo.name }}</h3>
               </div>
-              <p class="promo-text">{{ promo.text }}</p>
-            </div>
-          </div>
 
-          <button @click="emit('close')" class="footer-btn">
-            Entendido, volver a la lista
-          </button>
+              <button @click="emit('close')" class="footer-btn">
+                Entendido, volver a la lista
+              </button>
+            </div>
+          </Transition>
         </div>
       </div>
     </div>
@@ -349,6 +383,105 @@ const getMultipleLogos = (names) => {
   background: var(--bg-color);
   border-color: var(--primary-light);
   color: var(--primary-light);
+}
+
+/* Disclaimer Styles */
+.disclaimer-view {
+  padding: 1.5rem 0.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  animation: modal-pop 0.3s ease-out;
+}
+
+.disclaimer-icon {
+  width: 80px;
+  height: 80px;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-light);
+  margin-bottom: 0.5rem;
+}
+
+.shield-pulse {
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+
+.disclaimer-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--text-base);
+  margin: 0;
+}
+
+.disclaimer-text {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin: 0;
+  text-align: left;
+}
+
+.disclaimer-text strong {
+  color: var(--text-base);
+}
+
+.accept-btn {
+  width: 100%;
+  padding: 1rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  box-shadow: 0 4px 15px var(--primary-alpha);
+  transition: all 0.2s;
+  margin-top: 1rem;
+}
+
+.accept-btn:hover {
+  background: var(--primary-light);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--primary-alpha);
+}
+
+.promotions-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Animations */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateX(-20px);
 }
 
 .modal-enter-active,

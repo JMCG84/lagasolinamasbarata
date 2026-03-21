@@ -668,7 +668,7 @@ const searchByProvince = async () => {
             d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
           <polyline points="12 6 12 12 16 14"></polyline>
         </svg>
-        Datos actualizados según el Ministerio {{ lastUpdatedFormatted }}.
+        Datos actualizados según el Ministerio para la Transición Ecológica y el Reto Demográfico {{ lastUpdatedFormatted }}.
       </div>
 
       <div v-if="loading" class="loading-grid">
