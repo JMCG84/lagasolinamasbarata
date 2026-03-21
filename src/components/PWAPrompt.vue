@@ -5,7 +5,7 @@ import { APP_VERSION } from '../version.js';
 
 const VERSION_KEY = 'app_version_seen';
 
-// ── COBERTURA 1: Service Worker ──────────────────────────────────
+
 // Detecta nuevos builds tras cada despliegue en Vercel
 const { needRefresh, updateServiceWorker } = useRegisterSW({
   onRegistered(r) {
@@ -14,7 +14,7 @@ const { needRefresh, updateServiceWorker } = useRegisterSW({
   }
 });
 
-// ── COBERTURA 2: Versión en localStorage ────────────────────────
+
 // Detecta nuevas versiones aunque el SW no haya podido intervenir
 const versionMismatch = ref(false);
 
@@ -25,7 +25,7 @@ const checkVersion = () => {
   }
 };
 
-// ── Banner unificado: se activa si cualquiera de las dos coberturas lo detecta
+// Banner unificado: se activa si cualquiera de las dos coberturas lo detecta
 const showUpdateBanner = computed(() => needRefresh.value || versionMismatch.value);
 
 const handleUpdate = () => {
@@ -75,7 +75,7 @@ const handleBeforeInstallPrompt = (e) => {
 };
 
 onMounted(() => {
-  // Cobertura 2: verificar versión inmediatamente al cargar
+  
   checkVersion();
 
   if (isIos() && !isInStandaloneMode()) {
@@ -112,7 +112,7 @@ const closePrompt = () => {
 </script>
 
 <template>
-  <!-- ── UPDATE BANNER (Priority) ───────────────────────── -->
+  
   <Transition name="slide-up">
     <div v-if="showUpdateBanner" class="pwa-prompt-container">
       <div class="pwa-prompt-card update-card">
@@ -134,7 +134,7 @@ const closePrompt = () => {
     </div>
   </Transition>
 
-  <!-- ── INSTALL BANNER ─────────────────────────────────── -->
+  
   <Transition name="slide-up">
     <div v-if="showPrompt && !needRefresh" class="pwa-prompt-container">
       <div class="pwa-prompt-card">
