@@ -1,17 +1,50 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRegisterSW } from 'virtual:pwa-register/vue';
+import { APP_VERSION } from '../version.js';
 
-// update detection
+const VERSION_KEY = 'app_version_seen';
+
+// ── COBERTURA 1: Service Worker ──────────────────────────────────
+// Detecta nuevos builds tras cada despliegue en Vercel
 const { needRefresh, updateServiceWorker } = useRegisterSW({
   onRegistered(r) {
-    // Poll every 60 seconds for a new SW version
+    // Comprueba si hay nuevo SW cada 60 segundos (usuarios con la app abierta)
     r && setInterval(() => r.update(), 60 * 1000);
   }
 });
 
+// ── COBERTURA 2: Versión en localStorage ────────────────────────
+// Detecta nuevas versiones aunque el SW no haya podido intervenir
+const versionMismatch = ref(false);
+
+const checkVersion = () => {
+  const seen = localStorage.getItem(VERSION_KEY);
+  if (seen !== APP_VERSION) {
+    versionMismatch.value = true;
+  }
+};
+
+// ── Banner unificado: se activa si cualquiera de las dos coberturas lo detecta
+const showUpdateBanner = computed(() => needRefresh.value || versionMismatch.value);
+
+const handleUpdate = () => {
+  // Marcar la versión actual como vista
+  localStorage.setItem(VERSION_KEY, APP_VERSION);
+  versionMismatch.value = false;
+  // Si además el SW tiene una versión pendiente, aplicarla (recarga la página)
+  if (needRefresh.value) {
+    updateServiceWorker(true);
+  } else {
+    window.location.reload();
+  }
+};
+
 const dismissUpdate = () => {
+  // Posponer: se volverá a mostrar en la próxima versión
+  localStorage.setItem(VERSION_KEY, APP_VERSION);
   needRefresh.value = false;
+  versionMismatch.value = false;
 };
 
 // install prompt
@@ -42,6 +75,9 @@ const handleBeforeInstallPrompt = (e) => {
 };
 
 onMounted(() => {
+  // Cobertura 2: verificar versión inmediatamente al cargar
+  checkVersion();
+
   if (isIos() && !isInStandaloneMode()) {
     const lastPrompt = localStorage.getItem('pwa_prompt_ios');
     const now = new Date().getTime();
@@ -78,7 +114,7 @@ const closePrompt = () => {
 <template>
   <!-- ── UPDATE BANNER (Priority) ───────────────────────── -->
   <Transition name="slide-up">
-    <div v-if="needRefresh" class="pwa-prompt-container">
+    <div v-if="showUpdateBanner" class="pwa-prompt-container">
       <div class="pwa-prompt-card update-card">
         <button class="close-btn" @click="dismissUpdate">×</button>
         <div class="prompt-content">
@@ -88,7 +124,7 @@ const closePrompt = () => {
           <div class="text-content">
             <h3>Nueva versión disponible</h3>
             <p>Hay mejoras y correcciones disponibles. Actualiza ahora para obtener la mejor experiencia.</p>
-            <button class="update-btn" @click="updateServiceWorker(true)">
+            <button class="update-btn" @click="handleUpdate">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/></svg>
               Actualizar ahora
             </button>
