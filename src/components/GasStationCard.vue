@@ -55,15 +55,6 @@ const mapsUrl = computed(() => {
         <h3 class="station-name">{{ station.name || 'ESTACIÓN DE SERVICIO' }}</h3>
       </div>
       <div class="header-right">
-        <button 
-          class="btn-favorite" 
-          :class="{ 'is-active': isFavorite }" 
-          @click.stop="emit('toggle-favorite', station.id)"
-          :aria-label="isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'"
-          :data-tooltip="isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" :fill="isFavorite ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="heart-icon"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-        </button>
         <span v-if="distance !== null && distance !== undefined" class="distance-badge">{{ distance.toFixed(1) }} km</span>
         <span v-else class="province-badge">📍 Por provincia</span>
       </div>
@@ -119,11 +110,20 @@ const mapsUrl = computed(() => {
       </div>
     </div>
 
-    <!-- Botón calculadora centrado cuando no es modo cercanía -->
-    <div v-if="activeFuel !== 'distance'" class="centered-calc">
-      <button @click="emit('calculate', station[activeFuel])" class="btn-calc-large">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><path d="M8 14h2"/><path d="M14 14h2"/><path d="M8 18h2"/><path d="M14 18h2"/></svg>
-        <span>Calcular Precio</span>
+    <div class="bottom-actions-row">
+      <div class="calc-action-wrapper" :class="{ 'is-invisible': activeFuel === 'distance' }">
+        <button @click="emit('calculate', station[activeFuel])" class="btn-calc-full">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><path d="M8 14h2"/><path d="M14 14h2"/><path d="M8 18h2"/><path d="M14 18h2"/></svg>
+          <span>Calcular Precio</span>
+        </button>
+      </div>
+      <button 
+        class="card-action-fav" 
+        :class="{ 'is-active': isFavorite }" 
+        @click.stop="emit('toggle-favorite', station.id)"
+        :aria-label="isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" :fill="isFavorite ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="heart-icon"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
       </button>
     </div>
     
@@ -358,32 +358,73 @@ const mapsUrl = computed(() => {
   background: var(--primary-alpha);
 }
 
-.centered-calc {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 1.5rem;
-}
-
-.btn-calc-large {
+.bottom-actions-row {
   display: flex;
   align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  justify-content: space-between;
+}
+
+.calc-action-wrapper {
+  flex: 1;
+}
+
+.calc-action-wrapper.is-invisible {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.btn-calc-full {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   background: var(--surface-bg);
   border: 1px solid var(--border-color);
   color: var(--primary-light);
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1rem;
   border-radius: var(--radius-md);
-  font-weight: 600;
-  font-size: 0.9rem;
+  font-weight: 700;
+  font-size: 0.95rem;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.btn-calc-large:hover {
+.btn-calc-full:hover {
   background: var(--primary-alpha);
   border-color: var(--primary-light);
   transform: translateY(-2px);
   box-shadow: var(--shadow-sm);
+}
+
+.card-action-fav {
+  background: var(--surface-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.card-action-fav:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  transform: scale(1.1);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.card-action-fav.is-active {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.05);
+  filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.3));
 }
 
 .fuel-type {
