@@ -1,56 +1,47 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useRegisterSW } from 'virtual:pwa-register/vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { APP_VERSION } from '../version.js';
 
 const VERSION_KEY = 'app_version_seen';
 
-
-// Detecta nuevos builds tras cada despliegue en Vercel
-const { needRefresh, updateServiceWorker } = useRegisterSW({
-  onRegistered(r) {
-    // Comprueba si hay nuevo SW cada 60 segundos (usuarios con la app abierta)
-    r && setInterval(() => r.update(), 60 * 1000);
-  }
-});
-
-
-// Detecta nuevas versiones aunque el SW no haya podido intervenir
-const versionMismatch = ref(false);
+// VERSION CHECK (Primary banner mechanism) 
+// Compares stored version in localStorage with the current APP_VERSION.
+// If they differ, shows the update banner immediately on load.
+const showUpdateBanner = ref(false);
 
 const checkVersion = () => {
   const seen = localStorage.getItem(VERSION_KEY);
   if (seen !== APP_VERSION) {
-    versionMismatch.value = true;
+    showUpdateBanner.value = true;
   }
 };
 
-// Banner unificado: se activa si cualquiera de las dos coberturas lo detecta
-const showUpdateBanner = computed(() => needRefresh.value || versionMismatch.value);
-
 const handleUpdate = () => {
-  // Marcar la versión actual como vista
   localStorage.setItem(VERSION_KEY, APP_VERSION);
-  versionMismatch.value = false;
-  // Si además el SW tiene una versión pendiente, aplicarla (recarga la página)
-  if (needRefresh.value) {
-    updateServiceWorker(true);
-  } else {
-    window.location.reload();
-  }
+  showUpdateBanner.value = false;
+  window.location.reload();
 };
 
 const dismissUpdate = () => {
-  // Posponer: se volverá a mostrar en la próxima versión
   localStorage.setItem(VERSION_KEY, APP_VERSION);
-  needRefresh.value = false;
-  versionMismatch.value = false;
+  showUpdateBanner.value = false;
 };
 
-// install prompt
+// SW BACKGROUND POLL (Secondary mechanism)
+// Silently keeps the Service Worker up to date in the background.
+// Does NOT control the banner — that is handled by checkVersion().
+const pollServiceWorker = () => {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then((registration) => {
+      setInterval(() => registration.update(), 60 * 1000);
+    });
+  }
+};
+
+// INSTALL PROMPT
 const showPrompt = ref(false);
 const deferredPrompt = ref(null);
-const platformType = ref(''); // 'ios' or 'android'
+const platformType = ref('');
 
 const isIos = () => {
   const userAgent = window.navigator.userAgent.toLowerCase();
@@ -58,7 +49,7 @@ const isIos = () => {
   return navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
 };
 
-const isInStandaloneMode = () => 
+const isInStandaloneMode = () =>
   ('standalone' in window.navigator) && (window.navigator.standalone);
 
 const handleBeforeInstallPrompt = (e) => {
@@ -68,15 +59,15 @@ const handleBeforeInstallPrompt = (e) => {
     const lastPrompt = localStorage.getItem('pwa_prompt_android');
     const now = new Date().getTime();
     if (!lastPrompt || (now - parseInt(lastPrompt) > 2 * 24 * 60 * 60 * 1000)) {
-       platformType.value = 'android';
-       showPrompt.value = true;
+      platformType.value = 'android';
+      showPrompt.value = true;
     }
   }
 };
 
 onMounted(() => {
-  
   checkVersion();
+  pollServiceWorker();
 
   if (isIos() && !isInStandaloneMode()) {
     const lastPrompt = localStorage.getItem('pwa_prompt_ios');
