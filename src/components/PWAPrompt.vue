@@ -27,15 +27,33 @@ const dismissUpdate = () => {
   showUpdateBanner.value = false;
 };
 
-// SW BACKGROUND POLL (Secondary mechanism)
-// Silently keeps the Service Worker up to date in the background.
-// Does NOT control the banner — that is handled by checkVersion().
+// SW DETECTION (Secondary mechanism)
+// Uses native Service Worker API to detect when a new build is deployed.
+// Shows the banner automatically in under 60 seconds without any module dependency.
 const pollServiceWorker = () => {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.ready.then((registration) => {
-      setInterval(() => registration.update(), 60 * 1000);
+  if (!('serviceWorker' in navigator)) return;
+
+  navigator.serviceWorker.ready.then((registration) => {
+    // Case 1: There is already a SW waiting when the page loads (recent deploy)
+    if (registration.waiting) {
+      showUpdateBanner.value = true;
+    }
+
+    // Case 2: A new SW is found while the user has the app open
+    registration.addEventListener('updatefound', () => {
+      const newSW = registration.installing;
+      if (!newSW) return;
+      newSW.addEventListener('statechange', () => {
+        // New SW is installed and waiting to take control
+        if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+          showUpdateBanner.value = true;
+        }
+      });
     });
-  }
+
+    // Poll every 60 seconds so the SW checks the server for a new version
+    setInterval(() => registration.update(), 60 * 1000);
+  });
 };
 
 // INSTALL PROMPT
