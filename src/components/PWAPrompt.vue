@@ -1,15 +1,27 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
+import { useRegisterSW } from 'virtual:pwa-register/vue';
 
+// update detection
+const { needRefresh, updateServiceWorker } = useRegisterSW({
+  onRegistered(r) {
+    // Poll every 60 seconds for a new SW version
+    r && setInterval(() => r.update(), 60 * 1000);
+  }
+});
+
+const dismissUpdate = () => {
+  needRefresh.value = false;
+};
+
+// install prompt
 const showPrompt = ref(false);
 const deferredPrompt = ref(null);
 const platformType = ref(''); // 'ios' or 'android'
 
 const isIos = () => {
   const userAgent = window.navigator.userAgent.toLowerCase();
-  // Classic iOS (iPhone/iPod/Old iPad)
   if (/iphone|ipad|ipod/.test(userAgent)) return true;
-  // Modern iPadOS (Identifies as MacIntel with touch support)
   return navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
 };
 
@@ -17,12 +29,8 @@ const isInStandaloneMode = () =>
   ('standalone' in window.navigator) && (window.navigator.standalone);
 
 const handleBeforeInstallPrompt = (e) => {
-  // Prevent Chrome 67 and earlier from automatically showing the prompt
   e.preventDefault();
-  // Stash the event so it can be triggered later.
   deferredPrompt.value = e;
-  
-  // Show the prompt for Android/Desktop Chrome
   if (!isInStandaloneMode()) {
     const lastPrompt = localStorage.getItem('pwa_prompt_android');
     const now = new Date().getTime();
@@ -34,7 +42,6 @@ const handleBeforeInstallPrompt = (e) => {
 };
 
 onMounted(() => {
-  // IOS detection (Static)
   if (isIos() && !isInStandaloneMode()) {
     const lastPrompt = localStorage.getItem('pwa_prompt_ios');
     const now = new Date().getTime();
@@ -43,8 +50,6 @@ onMounted(() => {
       showPrompt.value = true;
     }
   }
-
-  // Android/Chrome detection (Event based)
   window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 });
 
@@ -54,16 +59,11 @@ onUnmounted(() => {
 
 const installPwa = async () => {
   if (!deferredPrompt.value) return;
-  // Show the install prompt
   deferredPrompt.value.prompt();
-  // Wait for the user to respond to the prompt
   const { outcome } = await deferredPrompt.value.userChoice;
   if (outcome === 'accepted') {
     console.log('User accepted the PWA install');
-  } else {
-    console.log('User dismissed the PWA install');
   }
-  // We've used the prompt, and can't use it again
   deferredPrompt.value = null;
   showPrompt.value = false;
 };
@@ -76,8 +76,31 @@ const closePrompt = () => {
 </script>
 
 <template>
+  <!-- ── UPDATE BANNER (Priority) ───────────────────────── -->
   <Transition name="slide-up">
-    <div v-if="showPrompt" class="pwa-prompt-container">
+    <div v-if="needRefresh" class="pwa-prompt-container">
+      <div class="pwa-prompt-card update-card">
+        <button class="close-btn" @click="dismissUpdate">×</button>
+        <div class="prompt-content">
+          <div class="update-icon-wrapper">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+          </div>
+          <div class="text-content">
+            <h3>Nueva versión disponible</h3>
+            <p>Hay mejoras y correcciones disponibles. Actualiza ahora para obtener la mejor experiencia.</p>
+            <button class="update-btn" @click="updateServiceWorker(true)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/></svg>
+              Actualizar ahora
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Transition>
+
+  <!-- ── INSTALL BANNER ─────────────────────────────────── -->
+  <Transition name="slide-up">
+    <div v-if="showPrompt && !needRefresh" class="pwa-prompt-container">
       <div class="pwa-prompt-card">
         <button class="close-btn" @click="closePrompt">×</button>
         <div class="prompt-content">
@@ -204,6 +227,57 @@ const closePrompt = () => {
 
 .install-btn:hover {
   background: var(--primary-dark);
+}
+
+/* Update banner specific styles */
+.update-card {
+  border-color: var(--primary);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), var(--surface-bg));
+}
+
+.update-icon-wrapper {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  background: rgba(59, 130, 246, 0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-light);
+  animation: spin-gentle 4s linear infinite;
+}
+
+@keyframes spin-gentle {
+  0%   { transform: rotate(0deg); }
+  25%  { transform: rotate(180deg); }
+  50%  { transform: rotate(180deg); }
+  75%  { transform: rotate(360deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.update-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 0.65rem 1.2rem;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+}
+
+.update-btn:hover {
+  background: var(--primary-light);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.5);
 }
 
 /* Animations */

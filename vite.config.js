@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [
     vue(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       injectRegister: 'auto',
       includeAssets: ['gas-icon.svg', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
