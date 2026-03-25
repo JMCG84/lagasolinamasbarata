@@ -29,28 +29,28 @@ const isLogoFailed = (name, idx = null) => {
 
 const promotions = [
   {
-    name: 'Moeve (antigua Cepsa) - ¡Oferta Líder!',
+    name: '🔴 OFERTA SEMANA SANTA · Moeve (antes Cepsa) & Naturgy: ¡Máximo Histórico!',
     logo: getStationLogo('cepsa'),
     color: '#ed1c24',
-    text: "Moeve rompe el mercado con su plan combinado con Naturgy. El ahorro base es de 12 cts/litro con la app Moeve gow. Sin embargo, si eres cliente de Naturgy (Luz/Gas), el descuento sube a 32 cts/litro. Para clientes con soluciones completas (mantenimiento y placas solares), el ahorro alcanza el máximo histórico de 67 cts/litro. El descuento se gestiona a través de la app gow y se aplica al pagar."
+    text: "Campaña especial de Semana Santa (del 24 de marzo al 6 de abril). El ahorro base es de 12 cts/litro pagando con la app Moeve gow. El descuento escala según tu vinculación con Naturgy: 20 cts/litro si tienes Luz o Gas. 30-40 cts/litro si añades servicios de mantenimiento. 60 cts/litro si tienes placas solares con Naturgy. Hasta 67 cts/litro: máximo ahorro usando la app gow + la tarjeta bancaria del programa. Extra Profesionales: +5 cts/litro para autónomos con tarjeta Moeve Pro."
   },
   {
-    name: 'Repsol (Waylet)',
+    name: '🔴 OFERTA SEMANA SANTA · 🔵 Repsol (Waylet): Respuesta a la Crisis',
     logo: getStationLogo('repsol'),
     color: '#0055a5',
-    text: "Repsol mantiene su descuento de hasta 40 cts/litro para usuarios que tengan contratados sus servicios de Luz, Gas y Energía Solar. El ahorro mínimo garantizado por usar la app Waylet es de 10 cts/litro en todos los carburantes. El descuento es directo y aparece reflejado en el ticket tras el pago móvil."
+    text: "Promoción vigente hasta el 6 de abril. Repsol ha duplicado sus descuentos: el ahorro mínimo por usar Waylet es de 10 cts/litro. Puedes alcanzar hasta 40 cts/litro si tienes contratados con Repsol los servicios de Luz, Gas y Energía Solar (Plan Energías Conectadas). El descuento es directo en el pago y se acumula en tu saldo Waylet para próximos repostajes."
   },
   {
-    name: 'BP (Mi BP)',
+    name: '🟢 BP (Mi BP): Ahorro Acumulable',
     logo: getStationLogo('bp'),
     color: '#00833d',
-    text: "BP refuerza su programa con ahorros de hasta 15 cts/litro acumulables en la tarjeta Mi BP. Además, se mantiene la promoción de ahorro extra en estaciones seleccionadas y la bonificación mediante la tarjeta Visa Mi BP, que puede devolver hasta un 6% adicional en tu extracto bancario."
+    text: "BP ofrece hasta 15 cts/litro de ahorro acumulable para usuarios de la tarjeta o app Mi BP. Además, si utilizas la tarjeta Visa Mi BP, recibes una devolución adicional de hasta el 6% en tu extracto mensual. Este ahorro es independiente de la rebaja fiscal del IVA ya aplicada en el surtidor."
   },
   {
-    name: 'Shell / DISA (Topii / ING)',
+    name: '🟡 Shell / DISA (Topii / ING)',
     logo: getStationLogo('shell'),
     color: '#fbce07',
-    text: "Se mantiene el descuento del 4% directo pagando con la app Topii. Para clientes de ING, el descuento del 4% se aplica mediante devolución directa en la cuenta bancaria vinculada tras el repostaje. Es compatible con el precio de surtidor que ya incluye la rebaja del IVA al 10%."
+    text: "Mantienen el 4% de descuento directo a través de la app Topii. Para clientes de ING, el 4% se devuelve automáticamente en la cuenta bancaria tras el repostaje. Es la opción más sencilla ya que no requiere vinculación de contratos de luz o gas."
   },
   {
     name: 'Galp (Mundo Galp)',
@@ -59,11 +59,11 @@ const promotions = [
     text: "Ahorro de 5 cts/litro en combustibles estándar y 10 cts/litro en gama G-Force usando la app Mundo Galp. Si pagas con tarjetas de Abanca, sumas una bonificación adicional de entre el 2% y el 5% según el tipo de cuenta, que recibirás directamente en tu extracto mensual."
   },
   {
-    name: 'Supermercados (Carrefour / Alcampo / Eroski)',
+    name: '🛒 Carrefour: El ChequeAhorro sube',
     logo: getStationLogo('carrefour'),
     multiple: ['carrefour', 'alcampo', 'eroski'],
     color: '#0038a8',
-    text: "Carrefour ha subido su bonificación al 10% del importe (antes 8%) acumulable en el ChequeAhorro por la crisis de precios. En Alcampo y Eroski, los descuentos suelen ser de unos 3 a 5 cts/litro directos al pasar la tarjeta de fidelidad del supermercado antes de realizar el pago."
+    text: "Debido a la situación energética, Carrefour devuelve ahora el 10% del importe (antes 8%) en tu ChequeAhorro trimestral al presentar la tarjeta de El Club Carrefour en sus estaciones de servicio. El precio del surtidor ya refleja además la bajada del IVA al 10%."
   },
   {
     name: 'Low Cost (Ballenoil / Petroprix)',
@@ -106,13 +106,13 @@ const getMultipleLogos = (names) => {
               </div>
               <h3 class="disclaimer-title">Aviso Legal y de Responsabilidad</h3>
               <p class="disclaimer-text">
-                Los descuentos mostrados son <strong>estimaciones basadas en las promociones públicas</strong> de cada compañía al 21 de marzo de 2026. 
+                Los precios mostrados en el mapa ya incluyen la rebaja del <strong>IVA al 10%</strong> aprobada por el Gobierno (Real Decreto-ley 7/2026).
               </p>
               <p class="disclaimer-text">
-                Los ahorros máximos publicitados (como los 67 cts de Moeve o los 40 cts de Repsol) están sujetos a requisitos específicos, como la <strong>contratación obligatoria de servicios de Luz o Gas</strong> con dichas operadoras. 
+                Los descuentos adicionales de hasta 67 cts (Moeve) o 40 cts (Repsol) son promociones comerciales de duración limitada hasta el 6 de abril y dependen de la <strong>vinculación energética (Luz/Gas)</strong> del usuario.
               </p>
               <p class="disclaimer-text">
-                Los precios oficiales servidos por la API del Ministerio ya <strong>incluyen de serie la rebaja del IVA al 10%</strong> actualmente vigente.
+                Esta app utiliza los datos oficiales de la API del Ministerio para la Transición Ecológica.
               </p>
               
               <button @click="showDisclaimer = false" class="accept-btn">
@@ -127,8 +127,8 @@ const getMultipleLogos = (names) => {
               <div class="iva-banner">
                 <div class="iva-icon">📢</div>
                 <div class="iva-content">
-                  <h3>Actualización Gubernamental (21/03/2026)</h3>
-                  <p>El gobierno ha rebajado oficialmente el <strong>IVA al 10%</strong> en combustibles para paliar los costes energéticos. Los precios mostrados ya están actualizados.</p>
+                  <h3>Actualización Gubernamental (25/03/2026)</h3>
+                  <p>La rebaja del <strong>IVA al 10%</strong> en combustibles, aprobada por el Gobierno (Real Decreto-ley 7/2026), está vigente. Los precios mostrados ya reflejan esta actualización.</p>
                 </div>
               </div>
 

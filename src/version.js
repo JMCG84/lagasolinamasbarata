@@ -13,4 +13,4 @@
  *   - Cuando actualices datos (promociones, IVA, etc.)
  *   - Cuando quieras forzar un refresco universal
  */
-export const APP_VERSION = '2026.03.21.2';
+export const APP_VERSION = "2026.03.21.3";
