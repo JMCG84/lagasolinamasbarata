@@ -8,23 +8,50 @@ const VERSION_KEY = 'app_version_seen';
 // Compares stored version in localStorage with the current APP_VERSION.
 // If they differ, shows the update banner immediately on load.
 const showUpdateBanner = ref(false);
+const updateInProgress = ref(false);
+let swPollIntervalId = null;
 
-const checkVersion = () => {
-  const seen = localStorage.getItem(VERSION_KEY);
-  if (seen !== APP_VERSION) {
-    showUpdateBanner.value = true;
-  }
+const isUpdateNeeded = () => {
+  return localStorage.getItem(VERSION_KEY) !== APP_VERSION;
 };
 
-const handleUpdate = () => {
+const checkVersion = () => {
+  if (isUpdateNeeded()) showUpdateBanner.value = true;
+};
+
+const handleUpdate = async () => {
+  if (updateInProgress.value) return;
+  updateInProgress.value = true;
   localStorage.setItem(VERSION_KEY, APP_VERSION);
   showUpdateBanner.value = false;
-  window.location.reload();
+
+  // If there's a waiting SW, force it to activate.
+  if ('serviceWorker' in navigator) {
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      if (registration.waiting) {
+        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+      }
+
+      // Reload when the new SW takes control; fallback reload after a short delay.
+      navigator.serviceWorker.addEventListener(
+        'controllerchange',
+        () => window.location.reload(),
+        { once: true },
+      );
+      setTimeout(() => window.location.reload(), 2500);
+    } catch (e) {
+      window.location.reload();
+    }
+  } else {
+    window.location.reload();
+  }
 };
 
 const dismissUpdate = () => {
   localStorage.setItem(VERSION_KEY, APP_VERSION);
   showUpdateBanner.value = false;
+  updateInProgress.value = false;
 };
 
 // SW DETECTION (Secondary mechanism)
@@ -36,7 +63,7 @@ const pollServiceWorker = () => {
   navigator.serviceWorker.ready.then((registration) => {
     // Case 1: There is already a SW waiting when the page loads (recent deploy)
     if (registration.waiting) {
-      showUpdateBanner.value = true;
+      if (isUpdateNeeded()) showUpdateBanner.value = true;
     }
 
     // Case 2: A new SW is found while the user has the app open
@@ -45,14 +72,14 @@ const pollServiceWorker = () => {
       if (!newSW) return;
       newSW.addEventListener('statechange', () => {
         // New SW is installed and waiting to take control
-        if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+        if (newSW.state === 'installed' && isUpdateNeeded()) {
           showUpdateBanner.value = true;
         }
       });
     });
 
     // Poll every 60 seconds so the SW checks the server for a new version
-    setInterval(() => registration.update(), 60 * 1000);
+    swPollIntervalId = setInterval(() => registration.update(), 60 * 1000);
   });
 };
 
@@ -100,6 +127,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  if (swPollIntervalId) clearInterval(swPollIntervalId);
 });
 
 const installPwa = async () => {
