@@ -245,12 +245,16 @@ const filterAndSort = () => {
     );
     let minPrice = Infinity;
     let maxPrice = -Infinity;
+    let minStationId = null;
     const statFuel = fuelType.value === "distance" ? "price95" : fuelType.value;
 
     provinceStations.forEach((s) => {
       let price = s[statFuel];
       if (price && price > 0) {
-        if (price < minPrice) minPrice = price;
+        if (price < minPrice) {
+          minPrice = price;
+          minStationId = s.id;
+        }
         if (price > maxPrice) maxPrice = price;
       }
     });
@@ -260,6 +264,7 @@ const filterAndSort = () => {
         name: currentProvince,
         min: minPrice.toFixed(3),
         max: maxPrice.toFixed(3),
+        minStationId,
       };
     } else {
       provinceStats.value = null;
@@ -285,6 +290,48 @@ const filterAndSort = () => {
 
 const sortStations = () => {
   filterAndSort();
+};
+
+const scrollToMinPriceStation = () => {
+  const minStationId = provinceStats.value?.minStationId;
+  if (!minStationId) {
+    showNotification("No se encontró la estación del precio mínimo", "warning");
+    return;
+  }
+
+  const scrollToStation = () => {
+    const stationEl = document.getElementById(`station-${minStationId}`);
+    if (!stationEl) {
+      showNotification("No se pudo ubicar la estación mínima", "warning");
+      return;
+    }
+    stationEl.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+
+  const alreadyVisible = processedStations.value.some((s) => s.id === minStationId);
+  if (!alreadyVisible) {
+    const minStation = allStations.value.find((s) => s.id === minStationId);
+    if (!minStation) {
+      showNotification("No se encontró la estación del precio mínimo", "warning");
+      return;
+    }
+
+    const stationWithDistance = userLoc.value
+      ? {
+          ...minStation,
+          distance: calculateDistance(
+            userLoc.value.lat,
+            userLoc.value.lon,
+            minStation.lat,
+            minStation.lon,
+          ),
+        }
+      : minStation;
+
+    processedStations.value = [stationWithDistance, ...processedStations.value].slice(0, 50);
+  }
+
+  requestAnimationFrame(scrollToStation);
 };
 
 const searchByProvince = async () => {
@@ -331,7 +378,10 @@ const searchByProvince = async () => {
     filtered.forEach((s) => {
       const price = s[fuelKey];
       if (price && price > 0) {
-        if (price < minPrice) minPrice = price;
+        if (price < minPrice) {
+          minPrice = price;
+          minStationId = s.id;
+        }
         if (price > maxPrice) maxPrice = price;
       }
     });
@@ -341,6 +391,7 @@ const searchByProvince = async () => {
         name: modalProvince.value,
         min: minPrice.toFixed(3),
         max: maxPrice.toFixed(3),
+        minStationId,
       };
     } else {
       provinceStats.value = null;
@@ -577,6 +628,11 @@ const searchByProvince = async () => {
           <span class="stat-label">📈 Máximo (7 días)</span>
           <span class="stat-value text-red">{{ provinceStats.max }} €/L</span>
         </div>
+        <div v-if="provinceStats.minStationId" class="stat-action-row">
+          <button class="stat-jump-btn" @click="scrollToMinPriceStation">
+            Ver estación del mínimo
+          </button>
+        </div>
       </div>
 
       <div
@@ -629,6 +685,7 @@ const searchByProvince = async () => {
         <GasStationCard
           v-for="station in processedStations"
           :key="station.id"
+          :id="`station-${station.id}`"
           :station="station"
           :distance="station.distance"
           :activeFuel="fuelType"
@@ -1080,6 +1137,30 @@ h1 {
   font-size: 1.35rem;
   font-weight: 700;
   color: var(--text-base);
+}
+
+.stat-jump-btn {
+  margin-top: 0.45rem;
+  background: var(--primary);
+  border: none;
+  color: #fff;
+  border-radius: var(--radius-md);
+  padding: 0.35rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.stat-jump-btn:hover {
+  background: var(--primary-light);
+}
+
+.stat-action-row {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 0.25rem;
 }
 
 .text-green {
