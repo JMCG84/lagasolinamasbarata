@@ -29,48 +29,48 @@ const isLogoFailed = (name, idx = null) => {
 
 const promotions = [
   {
-    name: 'Moeve (antes Cepsa) & Naturgy: ¡Líder en Ahorro!',
+    name: 'Moeve & Naturgy: Plan Multienergy (Campaña Otoño 2026)',
     logo: getStationLogo('cepsa'),
     color: '#ed1c24',
-    text: "Promoción 'Plan Multienergy' prorrogada hasta el 20 de abril. El ahorro base es de 12 cts/litro con la app Moeve gow (5 cts directos + 7 cts en ChequeAhorro Carrefour si vinculas tarjeta). El ahorro sube según tu contrato con Naturgy: 20 cts/litro con Luz o Gas. 30 cts/litro con Luz/Gas + Mantenimiento. 60 cts/litro con Luz/Gas + Mantenimiento + Placas Solares. Hasta 67 cts/litro: máximo ahorro usando app gow + Tarjeta Mastercard gow. Extra Profesionales: +5 cts/litro adicionales para usuarios de Moeve Pro."
+    text: "Ahorro base Club Moeve gow: 5 cts/litro en saldo directo. Con Tarjeta Pass Carrefour vinculada se suma un 4% al ChequeAhorro. Alianza Naturgy: Bonificación de bienvenida de hasta 40 € en saldo (20 € en cada uno de los dos primeros repostajes). Ahorro recurrente de entre 15 y 35 cts/litro según los suministros contratados (Luz, Gas, Mantenimiento y Solar). Extra profesionales: +5 cts/litro adicionales para usuarios registrados en Moeve Pro."
   },
   {
-    name: '🔵 Repsol (Waylet): Saldo Duplicado',
+    name: '🔵 Repsol (Waylet): Ahorro Multienergía',
     logo: getStationLogo('repsol'),
     color: '#0055a5',
-    text: "Campaña de abril: Saldo Doble al pagar con Waylet. El ahorro mínimo garantizado ha subido a 10 cts/litro en saldo. Según tus contratos de energía con Repsol, el ahorro acumulado es: 20 cts/litro si tienes Luz. 30 cts/litro si tienes Luz y Gas. Hasta 40 cts/litro si tienes Luz, Gas y Solar. El saldo acumulado se puede usar íntegramente para pagar futuros repostajes o en tiendas Repsol."
+    text: "Ahorro base: Mínimo garantizado de hasta 10 cts/litro en saldo Waylet al pagar mediante la aplicación. Planes de Energía: Coche + Luz: 20 cts/litro. Coche + Luz y Gas: 30 cts/litro. Coche + Luz, Gas y Solar: hasta 40 cts/litro. Bonificación con Tarjeta Waylet: +5 cts/litro adicionales acumulables durante campañas activas. El saldo acumulado se puede canjear en repostajes, recargas eléctricas o tiendas Repsol."
   },
   {
-    name: '🟢 BP (Mi BP)',
+    name: '🟢 BP (miBP)',
     logo: getStationLogo('bp'),
     color: '#00833d',
-    text: "Ahorro de hasta 15 cts/litro acumulables en tu tarjeta Mi BP. Si pagas con la tarjeta Visa Mi BP (Bankintercard), sumas un 6% de devolución (en modalidad de pago aplazado) o un 3% (pago total) sobre el importe neto. El ahorro se gestiona como saldo para próximos consumos en la red BP."
+    text: "Promoción de bienvenida: Bono de hasta 9 € en saldo para nuevos usuarios (5 € en el primer repostaje y 2 € en el segundo y tercer repostaje). Acumulación miBP: Descuentos personalizados y acumulación de hasta 15 cts/litro en saldo miBP al repostar carburantes Ultimate. Tarjeta Visa Mi BP (Bankintercard): 6% de devolución en modalidad de pago aplazado y 3% en modalidad de fin de mes sin intereses. Alianza Carrefour: Acumulación directa del 3% del importe repostado en el ChequeAhorro trimestral."
   },
   {
-    name: '🟡 Shell / DISA (Topii / ING)',
+    name: '🟡 Shell / DISA (Topii / Acuerdos Bancarios)',
     logo: getStationLogo('shell'),
     color: '#fbce07',
-    text: "Mantienen el 4% de descuento directo a través de la app Topii. Para clientes de ING, el 4% se devuelve automáticamente en la cuenta bancaria tras el repostaje. Es la opción más sencilla ya que no requiere vinculación de contratos de luz o gas."
+    text: "Devolución directa: Descuento directo del 4% en repostajes pagando a través de la app Topii. Clientes ING: Abono automático del 4% en la cuenta bancaria asociada al repostar en estaciones Shell y DISA adheridas, sin necesidad de vincular contratos de suministros."
   },
   {
     name: '🟠 Galp (Mundo Galp)',
     logo: getStationLogo('galp'),
     color: '#ff6600',
-    text: "Descuento de 5 cts/litro (estándar) y 10 cts/litro (G-Force) con el código QR de la app. Si además pagas con tarjetas de Abanca, recibes entre un 2% y un 5% de bonificación adicional directa en tu extracto bancario mensual."
+    text: "App Mundo Galp: Descuento directo de 5 cts/litro en carburantes estándar y 10 cts/litro en gama premium (G-Force) escaneando el QR en caja. Promoción de bienvenida/invitados con hasta 15 cts/litro de descuento (máximo 30 litros). Tarjetas Abanca: Bonificación bancaria directa de entre un 2% y un 5% de reembolso en extracto mensual al repostar en Galp."
   },
   {
     name: '🛒 Gasolineras de Supermercado (Carrefour / Alcampo)',
     logo: getStationLogo('carrefour'),
     multiple: ['carrefour', 'alcampo', 'eroski'],
     color: '#0038a8',
-    text: "Carrefour: Mantiene la devolución del 10% del importe en tu ChequeAhorro trimestral al usar la tarjeta El Club Carrefour. Alcampo: Ofrece precios base reducidos y hasta 10 cts/litro de descuento directo si utilizas su tarjeta de fidelidad propia al pasar por caja."
+    text: "Estaciones Carrefour: Devolución del 8% del importe total en el ChequeAhorro trimestral para socios de El Club Carrefour o titulares de la tarjeta PASS. Alcampo: Precios directos de surtidor reducidos y cupones promocionales adicionales de hasta 5-10 cts/litro a través del programa de fidelidad de Alcampo."
   },
   {
-    name: 'Low Cost (Ballenoil / Petroprix)',
+    name: 'Low Cost (Ballenoil / Petroprix / Plenoil)',
     logo: getStationLogo('ballenoil'),
     multiple: ['ballenoil', 'petroprix'],
     color: '#94a3b8',
-    text: "Mantienen los precios base más bajos de la API oficial. Sus promociones actuales se centran en la app Easy Fuel (Ballenoil) con sorteos de combustible y cupones de lavado. No requieren contratos de luz o gas para acceder a su precio reducido."
+    text: "Mantienen los precios de venta al público más bajos del mercado sin sujeción a planes de energía o fidelización bancaria. Funcionalidades como Easy Fuel (Ballenoil) mantienen pagos automatizados por matrícula, cupones de lavado y promociones puntuales en app."
   }
 ];
 
@@ -106,10 +106,10 @@ const getMultipleLogos = (names) => {
               </div>
               <h3 class="disclaimer-title">Aviso Legal y de Responsabilidad</h3>
               <p class="disclaimer-text">
-                Los precios mostrados ya incluyen la rebaja del <strong>IVA al 10%</strong>.
+                Precios calculados con el tipo general de <strong>IVA del 21%</strong> aplicable a carburantes.
               </p>
               <p class="disclaimer-text">
-                Los descuentos máximos (67 cts en Moeve / 40 cts en Repsol) son promociones comerciales sujetas a <strong>vinculación energética (Luz/Gas)</strong> y están vigentes, salvo nueva prórroga, hasta el 20 de abril de 2026.
+                Información de ofertas y condiciones comerciales actualizada a 26 de septiembre de 2026.
               </p>
               <p class="disclaimer-text">
                 Datos obtenidos de la API oficial del Ministerio para la Transición Ecológica.
@@ -127,8 +127,8 @@ const getMultipleLogos = (names) => {
               <div class="iva-banner">
                 <div class="iva-icon">📢</div>
                 <div class="iva-content">
-                  <h3>Actualización de Promociones (13/04/2026)</h3>
-                  <p>Información de ofertas y condiciones comerciales actualizada a 13 de abril de 2026. Los precios mostrados mantienen aplicada la rebaja del <strong>IVA al 10%</strong>.</p>
+                  <h3>Actualización de Promociones (26/09/2026)</h3>
+                  <p>Información de ofertas y condiciones comerciales actualizada a 26 de septiembre de 2026. Precios calculados con el tipo general de <strong>IVA del 21%</strong> aplicable a carburantes.</p>
                 </div>
               </div>
 
